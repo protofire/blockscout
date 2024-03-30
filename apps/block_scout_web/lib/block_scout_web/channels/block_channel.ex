@@ -9,15 +9,34 @@ defmodule BlockScoutWeb.BlockChannel do
 
   intercept(["new_block"])
 
-  def join("blocks_old:new_block", _params, socket) do
+  def join("blocks:new_block", _params, socket) do
+    Logger.info("Joining blocks:new_block channel")
     {:ok, %{}, socket}
   end
 
-  def join("blocks_old:" <> _miner_address, _params, socket) do
+  def join("blocks:" <> _miner_address, _params, socket) do
+    Logger.info("Joining blocks:<miner_address> channel")
     {:ok, %{}, socket}
+  end
+
+  def handle_out(
+        "new_block",
+        %{block: block, average_block_time: average_block_time},
+        %Phoenix.Socket{handler: BlockScoutWeb.UserSocketV2} = socket
+      ) do
+    Logger.info("Handling out new_block for UserSocketV2")
+    rendered_block = BlockViewAPI.render("block.json", %{block: block, socket: nil})
+
+    push(socket, "new_block", %{
+      average_block_time: to_string(Duration.to_milliseconds(average_block_time)),
+      block: rendered_block
+    })
+
+    {:noreply, socket}
   end
 
   def handle_out("new_block", %{block: block, average_block_time: average_block_time}, socket) do
+    Logger.info("Handling out new_block")
     Gettext.put_locale(BlockScoutWeb.Gettext, socket.assigns.locale)
 
     rendered_block =

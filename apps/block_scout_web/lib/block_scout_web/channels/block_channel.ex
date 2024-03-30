@@ -3,6 +3,7 @@ defmodule BlockScoutWeb.BlockChannel do
   Establishes pub/sub channel for live updates of block events.
   """
   use BlockScoutWeb, :channel
+  require Logger
 
   alias BlockScoutWeb.API.V2.BlockView, as: BlockViewAPI
   alias BlockScoutWeb.{BlockView, ChainView}

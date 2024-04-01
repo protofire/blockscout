@@ -2,6 +2,7 @@ defmodule Explorer.Counters.Helper do
   @moduledoc """
     A helper for caching modules
   """
+  require Logger
 
   @ets_opts [
     :set,
@@ -19,6 +20,7 @@ defmodule Explorer.Counters.Helper do
   def fetch_from_cache(key, cache_name, default \\ 0) do
     case :ets.lookup(cache_name, key) do
       [{_, value}] ->
+        Logger.debug("Cache hit for #{key}")
         value
 
       [] ->
@@ -27,6 +29,7 @@ defmodule Explorer.Counters.Helper do
   end
 
   def create_cache_table(cache_name) do
+    Logger.debug("Creating cache table #{cache_name}")
     if :ets.whereis(cache_name) == :undefined do
       :ets.new(cache_name, @ets_opts)
     end

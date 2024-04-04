@@ -84,7 +84,7 @@ defmodule EthereumJSONRPC.Transaction do
           wrapped_s: non_neg_integer(),
           wrapped_hash: EthereumJSONRPC.hash(),
           to_shard_id: non_neg_integer(),
-          shard_id: non_neg_integer(),
+          shard_id: non_neg_integer()
         }
 
   @doc """
@@ -267,9 +267,7 @@ defmodule EthereumJSONRPC.Transaction do
           "value" => value,
           "type" => type,
           "maxPriorityFeePerGas" => max_priority_fee_per_gas,
-          "maxFeePerGas" => max_fee_per_gas,
-          "toShardID" => to_shard_id,
-          "shardID" => shard_id
+          "maxFeePerGas" => max_fee_per_gas
         } = transaction
       ) do
     result = %{
@@ -290,12 +288,14 @@ defmodule EthereumJSONRPC.Transaction do
       transaction_index: index,
       type: type,
       max_priority_fee_per_gas: max_priority_fee_per_gas,
-      max_fee_per_gas: max_fee_per_gas,
+      max_fee_per_gas: max_fee_per_gas
     }
 
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
-      {"block_timestamp", :block_timestamp}
+      {"block_timestamp", :block_timestamp},
+      {"to_shard_id", :to_shard_id},
+      {"shard_id", :shard_id}
     ])
   end
 

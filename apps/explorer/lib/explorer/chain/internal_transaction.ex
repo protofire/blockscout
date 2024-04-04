@@ -42,6 +42,35 @@ defmodule Explorer.Chain.InternalTransaction do
    * `block_index` - the index of this internal transaction inside the `block`
    * `pending_block` - `nil` if `block` has all its internal transactions fetched
   """
+  @type t :: %__MODULE__{
+          block_number: Explorer.Chain.Block.block_number() | nil,
+          type: Type.t(),
+          call_type: CallType.t() | nil,
+          created_contract_address: %Ecto.Association.NotLoaded{} | Address.t() | nil,
+          created_contract_address_hash: Hash.t() | nil,
+          created_contract_code: Data.t() | nil,
+          error: String.t(),
+          from_address: %Ecto.Association.NotLoaded{} | Address.t(),
+          from_address_hash: Hash.Address.t(),
+          gas: Gas.t() | nil,
+          gas_used: Gas.t() | nil,
+          index: non_neg_integer(),
+          init: Data.t() | nil,
+          input: Data.t() | nil,
+          output: Data.t() | nil,
+          to_address: %Ecto.Association.NotLoaded{} | Address.t() | nil,
+          to_address_hash: Hash.Address.t() | nil,
+          trace_address: [non_neg_integer()],
+          transaction: %Ecto.Association.NotLoaded{} | Transaction.t(),
+          transaction_hash: Hash.t(),
+          transaction_index: Transaction.transaction_index() | nil,
+          value: Wei.t(),
+          block_hash: Hash.Full.t(),
+          block_index: non_neg_integer(),
+          shard_id: non_neg_integer() | nil,
+          to_shard_id: non_neg_integer() | nil
+        }
+
   @primary_key false
   typed_schema "internal_transactions" do
     # todo: consider using enum: `field(:call_type, Ecto.Enum, values: [:call, :callcode, :delegatecall, :staticcall])`
@@ -61,6 +90,8 @@ defmodule Explorer.Chain.InternalTransaction do
     field(:block_number, :integer)
     field(:transaction_index, :integer)
     field(:block_index, :integer, null: false)
+    field(:shard_id, :integer)
+    field(:to_shard_id, :integer)
 
     timestamps()
 
@@ -413,7 +444,7 @@ defmodule Explorer.Chain.InternalTransaction do
     type_changeset(changeset, attrs, type)
   end
 
-  @call_optional_fields ~w(error gas_used output block_number transaction_index)a
+  @call_optional_fields ~w(error gas_used output block_number transaction_index shard_id to_shard_id)a
   @call_required_fields ~w(call_type from_address_hash gas index input to_address_hash trace_address transaction_hash value)a
   @call_allowed_fields @call_optional_fields ++ @call_required_fields
 
@@ -429,7 +460,7 @@ defmodule Explorer.Chain.InternalTransaction do
     |> unique_constraint(:index)
   end
 
-  @create_optional_fields ~w(error created_contract_code created_contract_address_hash gas_used block_number transaction_index)a
+  @create_optional_fields ~w(error created_contract_code created_contract_address_hash gas_used block_number transaction_index shard_id to_shard_id)a
   @create_required_fields ~w(from_address_hash gas index init trace_address transaction_hash value)a
   @create_allowed_fields @create_optional_fields ++ @create_required_fields
 
@@ -444,7 +475,7 @@ defmodule Explorer.Chain.InternalTransaction do
     |> unique_constraint(:index)
   end
 
-  @selfdestruct_optional_fields ~w(block_number transaction_index)a
+  @selfdestruct_optional_fields ~w(block_number transaction_index shard_id to_shard_id)a
   @selfdestruct_required_fields ~w(from_address_hash index to_address_hash trace_address transaction_hash type value)a
   @selfdestruct_allowed_fields @selfdestruct_optional_fields ++ @selfdestruct_required_fields
 
@@ -455,7 +486,7 @@ defmodule Explorer.Chain.InternalTransaction do
     |> unique_constraint(:index)
   end
 
-  @stop_optional_fields ~w(from_address_hash gas gas_used error)a
+  @stop_optional_fields ~w(from_address_hash gas gas_used error shard_id to_shard_id)a
   @stop_required_fields ~w(block_number transaction_hash transaction_index index type value trace_address)a
   @stop_allowed_fields @stop_optional_fields ++ @stop_required_fields
 

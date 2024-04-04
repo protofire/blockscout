@@ -24,7 +24,7 @@ defmodule EthereumJSONRPC.MoxTest do
       expect(EthereumJSONRPC.Mox, :json_rpc, fn [
                                                   %{
                                                     id: id,
-                                                    method: "eth_getBlockByNumber",
+                                                    method: "hmy_getBlockByNumber",
                                                     params: ["pending", false]
                                                   }
                                                 ],

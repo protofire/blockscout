@@ -82,7 +82,9 @@ defmodule EthereumJSONRPC.Transaction do
           wrapped_v: non_neg_integer(),
           wrapped_r: non_neg_integer(),
           wrapped_s: non_neg_integer(),
-          wrapped_hash: EthereumJSONRPC.hash()
+          wrapped_hash: EthereumJSONRPC.hash(),
+          to_shard_id: non_neg_integer(),
+          shard_id: non_neg_integer(),
         }
 
   @doc """
@@ -190,7 +192,9 @@ defmodule EthereumJSONRPC.Transaction do
           "maxPriorityFeePerGas" => max_priority_fee_per_gas,
           "maxFeePerGas" => max_fee_per_gas,
           "executionNode" => execution_node_hash,
-          "requestRecord" => wrapped
+          "requestRecord" => wrapped,
+          "toShardID" => to_shard_id,
+          "shardID" => shard_id
         } = transaction
       ) do
     result = %{
@@ -211,7 +215,9 @@ defmodule EthereumJSONRPC.Transaction do
       transaction_index: index,
       type: type,
       max_priority_fee_per_gas: max_priority_fee_per_gas,
-      max_fee_per_gas: max_fee_per_gas
+      max_fee_per_gas: max_fee_per_gas,
+      to_shard_id: to_shard_id,
+      shard_id: shard_id
     }
 
     # credo:disable-for-next-line
@@ -261,7 +267,9 @@ defmodule EthereumJSONRPC.Transaction do
           "value" => value,
           "type" => type,
           "maxPriorityFeePerGas" => max_priority_fee_per_gas,
-          "maxFeePerGas" => max_fee_per_gas
+          "maxFeePerGas" => max_fee_per_gas,
+          "toShardID" => to_shard_id,
+          "shardID" => shard_id
         } = transaction
       ) do
     result = %{
@@ -282,7 +290,7 @@ defmodule EthereumJSONRPC.Transaction do
       transaction_index: index,
       type: type,
       max_priority_fee_per_gas: max_priority_fee_per_gas,
-      max_fee_per_gas: max_fee_per_gas
+      max_fee_per_gas: max_fee_per_gas,
     }
 
     put_if_present(transaction, result, [

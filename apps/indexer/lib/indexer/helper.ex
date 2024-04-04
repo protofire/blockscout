@@ -67,11 +67,11 @@ defmodule Indexer.Helper do
     req =
       request(%{
         id: 0,
-        method: "eth_getTransactionByHash",
+        method: "hmy_getTransactionByHash",
         params: [hash]
       })
 
-    error_message = &"eth_getTransactionByHash failed. Error: #{inspect(&1)}"
+    error_message = &"hmy_getTransactionByHash failed. Error: #{inspect(&1)}"
 
     repeated_call(&json_rpc/2, [req, json_rpc_named_arguments], error_message, retries)
   end

@@ -178,7 +178,7 @@ defmodule Indexer.Block.Realtime.FetcherTest do
                                   %{
                                     id: 0,
                                     jsonrpc: "2.0",
-                                    method: "eth_getTransactionReceipt",
+                                    method: "hmy_getTransactionReceipt",
                                     params: ["0xd3937e70fab3fb2bfe8feefac36815408bf07de3b9e09fe81114b9a6b17f55c8"]
                                   }
                                 ],
@@ -683,7 +683,7 @@ defmodule Indexer.Block.Realtime.FetcherTest do
                                   %{
                                     id: 0,
                                     jsonrpc: "2.0",
-                                    method: "eth_getTransactionReceipt",
+                                    method: "hmy_getTransactionReceipt",
                                     params: ["0xd3937e70fab3fb2bfe8feefac36815408bf07de3b9e09fe81114b9a6b17f55c8"]
                                   }
                                 ],

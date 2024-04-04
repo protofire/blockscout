@@ -98,7 +98,7 @@ defmodule Indexer.PendingTransactionsSanitizer do
 
   defp get_transaction_receipt_requests(id_to_params) do
     Enum.map(id_to_params, fn {id, transaction} ->
-      request(%{id: id, method: "eth_getTransactionReceipt", params: [to_string(transaction.hash)]})
+      request(%{id: id, method: "hmy_getTransactionReceipt", params: [to_string(transaction.hash)]})
     end)
   end
 

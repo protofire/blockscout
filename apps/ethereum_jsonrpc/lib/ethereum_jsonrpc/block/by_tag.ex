@@ -20,7 +20,7 @@ defmodule EthereumJSONRPC.Block.ByTag do
   """
   @spec request(%{:id => binary() | non_neg_integer(), :tag => binary()}) :: EthereumJSONRPC.Transport.request()
   def request(%{id: id, tag: tag}) when is_binary(tag) do
-    EthereumJSONRPC.request(%{id: id, method: "eth_getBlockByNumber", params: [tag, false]})
+    EthereumJSONRPC.request(%{id: id, method: "hmy_getBlockByNumber", params: [tag, false]})
   end
 
   @doc """

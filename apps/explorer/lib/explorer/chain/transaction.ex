@@ -333,11 +333,8 @@ defmodule Explorer.Chain.Transaction do
 
   alias Explorer.SmartContract.SigProviderInterface
 
-  @optional_attrs ~w(max_priority_fee_per_gas max_fee_per_gas block_hash block_number
-                     block_consensus block_timestamp created_contract_address_hash
-                     cumulative_gas_used earliest_processing_start error gas_price
-                     gas_used index created_contract_code_indexed_at status
-                     to_address_hash revert_reason type has_error_in_internal_transactions r s v)a
+  @optional_attrs ~w(max_priority_fee_per_gas max_fee_per_gas block_hash block_number block_consensus block_timestamp created_contract_address_hash cumulative_gas_used earliest_processing_start
+                     error gas_price gas_used index created_contract_code_indexed_at status to_address_hash revert_reason type has_error_in_internal_txs to_shard_id shard_id)a
 
   @chain_type_optional_attrs (case @chain_type do
                                 :optimism ->
@@ -400,48 +397,6 @@ defmodule Explorer.Chain.Transaction do
   """
   @type wei_per_gas :: Wei.t()
 
-  @derive {Poison.Encoder,
-           only: [
-             :block_number,
-             :block_timestamp,
-             :cumulative_gas_used,
-             :error,
-             :gas,
-             :gas_price,
-             :gas_used,
-             :index,
-             :created_contract_code_indexed_at,
-             :input,
-             :nonce,
-             :r,
-             :s,
-             :v,
-             :status,
-             :value,
-             :revert_reason
-           ]}
-
-  @derive {Jason.Encoder,
-           only: [
-             :block_number,
-             :block_timestamp,
-             :cumulative_gas_used,
-             :error,
-             :gas,
-             :gas_price,
-             :gas_used,
-             :index,
-             :created_contract_code_indexed_at,
-             :input,
-             :nonce,
-             :r,
-             :s,
-             :v,
-             :status,
-             :value,
-             :revert_reason
-           ]}
-
   @typedoc """
    * `block` - the block in which this transaction was mined/validated.  `nil` when transaction is pending or has only
      been collated into one of the `uncles` in one of the `forks`.
@@ -462,7 +417,7 @@ defmodule Explorer.Chain.Transaction do
       processing.
    * `error` - the `error` from the last `t:Explorer.Chain.InternalTransaction.t/0` in `internal_transactions` that
      caused `status` to be `:error`.  Only set after `internal_transactions_index_at` is set AND if there was an error.
-     Also, `error` is set if transaction is dropped/replaced
+     Also, `error` is set if transaction is replaced/dropped
    * `forks` - copies of this transactions that were collated into `uncles` not on the primary consensus of the chain.
    * `from_address` - the source of `value`
    * `from_address_hash` - foreign key of `from_address`
@@ -478,6 +433,196 @@ defmodule Explorer.Chain.Transaction do
      transaction
    * `created_contract_code_indexed_at` - when created `address` code was fetched by `Indexer`
    * `revert_reason` - revert reason of transaction
+
+     | `status` | `contract_creation_address_hash` | `input`    | Token Transfer? | `internal_transactions_indexed_at`        | `internal_transactions` | Description                                                                                         |
+     |----------|----------------------------------|------------|-----------------|-------------------------------------------|-------------------------|-----------------------------------------------------------------------------------------------------|
+     | `:ok`    | `nil`                            | Empty      | Don't Care      | `inserted_at`                             | Unfetched               | Simple `value` transfer transaction succeeded.  Internal transactions would be same value transfer. |
+     | `:ok`    | `nil`                            | Don't Care | `true`          | `inserted_at`                             | Unfetched               | Token transfer (from `logs`) that didn't happen during a contract creation.                         |
+     | `:ok`    | Don't Care                       | Non-Empty  | Don't Care      | When `internal_transactions` are indexed. | Fetched                 | A contract call that succeeded.                                                                     |
+     | `:error` | nil                              | Empty      | Don't Care      | When `internal_transactions` are indexed. | Fetched                 | Simple `value` transfer transaction failed. Internal transactions fetched for `error`.              |
+     | `:error` | Don't Care                       | Non-Empty  | Don't Care      | When `internal_transactions` are indexed. | Fetched                 | A contract call that failed.                                                                        |
+     | `nil`    | Don't Care                       | Don't Care | Don't Care      | When `internal_transactions` are indexed. | Depends                 | A pending post-Byzantium transaction will only know its status from receipt.                        |
+     | `nil`    | Don't Care                       | Don't Care | Don't Care      | When `internal_transactions` are indexed. | Fetched                 | A pre-Byzantium transaction requires internal transactions to determine status.                     |
+   * `logs` - events that occurred while mining the `transaction`.
+   * `nonce` - the number of transaction made by the sender prior to this one
+   * `r` - the R field of the signature. The (r, s) is the normal output of an ECDSA signature, where r is computed as
+       the X coordinate of a point R, modulo the curve order n.
+   * `s` - The S field of the signature.  The (r, s) is the normal output of an ECDSA signature, where r is computed as
+       the X coordinate of a point R, modulo the curve order n.
+   * `status` - whether the transaction was successfully mined or failed.  `nil` when transaction is pending or has only
+     been collated into one of the `uncles` in one of the `forks`.
+   * `to_address` - sink of `value`
+   * `to_address_hash` - `to_address` foreign key
+   * `uncles` - uncle blocks where `forks` were collated
+   * `v` - The V field of the signature.
+   * `value` - wei transferred from `from_address` to `to_address`
+   * `revert_reason` - revert reason of transaction
+   * `max_priority_fee_per_gas` - User defined maximum fee (tip) per unit of gas paid to validator for transaction prioritization.
+   * `max_fee_per_gas` - Maximum total amount per unit of gas a user is willing to pay for a transaction, including base fee and priority fee.
+   * `type` - New transaction type identifier introduced in EIP 2718 (Berlin HF)
+   * `has_error_in_internal_txs` - shows if the internal transactions related to transaction have errors
+   * `execution_node` - execution node address (used by Suave)
+   * `execution_node_hash` - foreign key of `execution_node` (used by Suave)
+   * `wrapped_type` - transaction type from the `wrapped` field (used by Suave)
+   * `wrapped_nonce` - nonce from the `wrapped` field (used by Suave)
+   * `wrapped_to_address` - target address from the `wrapped` field (used by Suave)
+   * `wrapped_to_address_hash` - `wrapped_to_address` foreign key (used by Suave)
+   * `wrapped_gas` - gas from the `wrapped` field (used by Suave)
+   * `wrapped_gas_price` - gas_price from the `wrapped` field (used by Suave)
+   * `wrapped_max_priority_fee_per_gas` - max_priority_fee_per_gas from the `wrapped` field (used by Suave)
+   * `wrapped_max_fee_per_gas` - max_fee_per_gas from the `wrapped` field (used by Suave)
+   * `wrapped_value` - value from the `wrapped` field (used by Suave)
+   * `wrapped_input` - data from the `wrapped` field (used by Suave)
+   * `wrapped_v` - V field of the signature from the `wrapped` field (used by Suave)
+   * `wrapped_r` - R field of the signature from the `wrapped` field (used by Suave)
+   * `wrapped_s` - S field of the signature from the `wrapped` field (used by Suave)
+   * `wrapped_hash` - hash from the `wrapped` field (used by Suave)
+  """
+  @type t ::
+          Map.merge(
+            %__MODULE__{
+              block: %Ecto.Association.NotLoaded{} | Block.t() | nil,
+              block_hash: Hash.t() | nil,
+              block_number: Block.block_number() | nil,
+              block_consensus: boolean(),
+              block_timestamp: DateTime.t() | nil,
+              created_contract_address: %Ecto.Association.NotLoaded{} | Address.t() | nil,
+              created_contract_address_hash: Hash.Address.t() | nil,
+              created_contract_code_indexed_at: DateTime.t() | nil,
+              cumulative_gas_used: Gas.t() | nil,
+              earliest_processing_start: DateTime.t() | nil,
+              error: String.t() | nil,
+              forks: %Ecto.Association.NotLoaded{} | [Fork.t()],
+              from_address: %Ecto.Association.NotLoaded{} | Address.t(),
+              from_address_hash: Hash.Address.t(),
+              gas: Gas.t(),
+              gas_price: wei_per_gas | nil,
+              gas_used: Gas.t() | nil,
+              hash: Hash.t(),
+              index: transaction_index | nil,
+              input: Data.t(),
+              internal_transactions: %Ecto.Association.NotLoaded{} | [InternalTransaction.t()],
+              logs: %Ecto.Association.NotLoaded{} | [Log.t()],
+              nonce: non_neg_integer(),
+              r: r(),
+              s: s(),
+              status: Status.t() | nil,
+              to_address: %Ecto.Association.NotLoaded{} | Address.t() | nil,
+              to_address_hash: Hash.Address.t() | nil,
+              uncles: %Ecto.Association.NotLoaded{} | [Block.t()],
+              v: v(),
+              value: Wei.t(),
+              revert_reason: String.t() | nil,
+              max_priority_fee_per_gas: wei_per_gas | nil,
+              max_fee_per_gas: wei_per_gas | nil,
+              type: non_neg_integer() | nil,
+              has_error_in_internal_txs: boolean(),
+              transaction_fee_log: any(),
+              transaction_fee_token: any(),
+              to_shard_id: non_neg_integer() | nil,
+              shard_id: non_neg_integer() | nil
+            },
+            suave
+          )
+
+  if Application.compile_env(:explorer, :chain_type) == "suave" do
+    @type suave :: %{
+            execution_node: %Ecto.Association.NotLoaded{} | Address.t() | nil,
+            execution_node_hash: Hash.Address.t() | nil,
+            wrapped_type: non_neg_integer() | nil,
+            wrapped_nonce: non_neg_integer() | nil,
+            wrapped_to_address: %Ecto.Association.NotLoaded{} | Address.t() | nil,
+            wrapped_to_address_hash: Hash.Address.t() | nil,
+            wrapped_gas: Gas.t() | nil,
+            wrapped_gas_price: wei_per_gas | nil,
+            wrapped_max_priority_fee_per_gas: wei_per_gas | nil,
+            wrapped_max_fee_per_gas: wei_per_gas | nil,
+            wrapped_value: Wei.t() | nil,
+            wrapped_input: Data.t() | nil,
+            wrapped_v: v() | nil,
+            wrapped_r: r() | nil,
+            wrapped_s: s() | nil,
+            wrapped_hash: Hash.t() | nil
+          }
+  else
+    @type suave :: %{}
+  end
+
+  @derive {Poison.Encoder,
+           only: [
+             :block_number,
+             :block_timestamp,
+             :cumulative_gas_used,
+             :error,
+             :gas,
+             :gas_price,
+             :gas_used,
+             :index,
+             :created_contract_code_indexed_at,
+             :input,
+             :nonce,
+             :r,
+             :s,
+             :v,
+             :status,
+             :value,
+             :revert_reason,
+             :to_shard_id,
+             :shard_id
+           ]}
+
+  @derive {Jason.Encoder,
+           only: [
+             :block_number,
+             :block_timestamp,
+             :cumulative_gas_used,
+             :error,
+             :gas,
+             :gas_price,
+             :gas_used,
+             :index,
+             :created_contract_code_indexed_at,
+             :input,
+             :nonce,
+             :r,
+             :s,
+             :v,
+             :status,
+             :value,
+             :revert_reason,
+             :to_shard_id,
+             :shard_id
+           ]}
+
+  @typedoc """
+  @primary_key {:hash, Hash.Full, autogenerate: false}
+  schema "transactions" do
+    field(:block_number, :integer)
+    field(:block_consensus, :boolean)
+    field(:block_timestamp, :utc_datetime_usec)
+    field(:cumulative_gas_used, :decimal)
+    field(:earliest_processing_start, :utc_datetime_usec)
+    field(:error, :string)
+    field(:gas, :decimal)
+    field(:gas_price, Wei)
+    field(:gas_used, :decimal)
+    field(:index, :integer)
+    field(:created_contract_code_indexed_at, :utc_datetime_usec)
+    field(:input, Data)
+    field(:nonce, :integer)
+    field(:r, :decimal)
+    field(:s, :decimal)
+    field(:status, Status)
+    field(:v, :decimal)
+    field(:value, Wei)
+    field(:revert_reason, :string)
+    field(:max_priority_fee_per_gas, Wei)
+    field(:max_fee_per_gas, Wei)
+    field(:type, :integer)
+    field(:has_error_in_internal_txs, :boolean)
+    field(:has_token_transfers, :boolean, virtual: true)
+    field(:shard_id, :integer)
+    field(:to_shard_id, :integer)
 
      | `status` | `contract_creation_address_hash` | `input`    | Token Transfer? | `internal_transactions_indexed_at`        | `internal_transactions` | Description                                                                                         |
      |----------|----------------------------------|------------|-----------------|-------------------------------------------|-------------------------|-----------------------------------------------------------------------------------------------------|

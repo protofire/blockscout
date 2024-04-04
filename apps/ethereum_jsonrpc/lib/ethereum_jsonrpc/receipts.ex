@@ -307,6 +307,14 @@ defmodule EthereumJSONRPC.Receipts do
     Enum.map(receipts, &Receipt.to_elixir/1)
   end
 
+  defp request(id, transaction_hash) when is_integer(id) and is_binary(transaction_hash) do
+    request(%{
+      id: id,
+      method: "hmy_getTransactionReceipt",
+      params: [transaction_hash]
+    })
+  end
+
   # Modifies a JSON-RPC response.
   #
   # ## Parameters

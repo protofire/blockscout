@@ -70,7 +70,6 @@ defmodule Indexer.Block.Fetcher do
                 token_transfers: Import.Runner.options(),
                 tokens: Import.Runner.options(),
                 transactions: Import.Runner.options(),
-                staking_transactions: Import.Runner.options()
               }
             ) :: Import.all_result()
 

@@ -554,7 +554,7 @@ defmodule EthereumJSONRPCTest do
           expect(EthereumJSONRPC.Mox, :json_rpc, fn [
                                                       %{
                                                         id: id,
-                                                        method: "hmy_getBlockByNumber",
+                                                        method: "eth_getBlockByNumber",
                                                         params: [^tag, false]
                                                       }
                                                     ],
@@ -596,7 +596,7 @@ defmodule EthereumJSONRPCTest do
           expect(EthereumJSONRPC.Mox, :json_rpc, fn [
                                                       %{
                                                         id: id,
-                                                        method: "hmy_getBlockByNumber",
+                                                        method: "eth_getBlockByNumber",
                                                         params: [^tag, false]
                                                       }
                                                     ],
@@ -1026,7 +1026,7 @@ defmodule EthereumJSONRPCSyncTest do
         [
           %{
             id: id,
-            method: "hmy_getBlockByNumber"
+            method: "eth_getBlockByNumber"
           }
         ],
         _options ->

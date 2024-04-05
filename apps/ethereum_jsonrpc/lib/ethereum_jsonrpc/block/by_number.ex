@@ -16,6 +16,6 @@ defmodule EthereumJSONRPC.Block.ByNumber do
         number
       end
 
-    EthereumJSONRPC.request(%{id: id, method: "hmy_getBlockByNumber", params: [block_number, hydrated]})
+    EthereumJSONRPC.request(%{id: id, method: "eth_getBlockByNumber", params: [block_number, hydrated]})
   end
 end

@@ -28,7 +28,7 @@ defmodule Indexer.Transform.AddressCoinBalancesDaily do
             json_rpc_named_arguments = Application.get_env(:explorer, :json_rpc_named_arguments)
 
             with {:ok, %{"timestamp" => timestamp_raw}} <-
-                   %{id: 1, method: "hmy_getBlockByNumber", params: [integer_to_quantity(block_number), false]}
+                   %{id: 1, method: "eth_getBlockByNumber", params: [integer_to_quantity(block_number), false]}
                    |> request()
                    |> json_rpc(json_rpc_named_arguments) do
               timestamp = quantity_to_integer(timestamp_raw)

@@ -8,7 +8,7 @@ defmodule EthereumJSONRPC.Block.ByTag do
   alias EthereumJSONRPC.Blocks
 
   def request(%{id: id, tag: tag}) when is_binary(tag) do
-    EthereumJSONRPC.request(%{id: id, method: "hmy_getBlockByNumber", params: [tag, false]})
+    EthereumJSONRPC.request(%{id: id, method: "eth_getBlockByNumber", params: [tag, false]})
   end
 
   def number_from_result({:ok, %{"number" => nil}}), do: {:error, :not_found}

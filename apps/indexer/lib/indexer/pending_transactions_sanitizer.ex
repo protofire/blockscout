@@ -73,7 +73,7 @@ defmodule Indexer.PendingTransactionsSanitizer do
       pending_tx_hash_str = "0x" <> Base.encode16(pending_tx.hash.bytes, case: :lower)
 
       with {:ok, result} <-
-             %{id: ind, method: "hmy_getTransactionReceipt", params: [pending_tx_hash_str]}
+             %{id: ind, method: "eth_getTransactionReceipt", params: [pending_tx_hash_str]}
              |> request()
              |> json_rpc(json_rpc_named_arguments) do
         if result do

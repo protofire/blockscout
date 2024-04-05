@@ -6,6 +6,6 @@ defmodule EthereumJSONRPC.Block.ByHash do
   @include_transactions true
 
   def request(%{id: id, hash: hash}) do
-    EthereumJSONRPC.request(%{id: id, method: "eth_getBlockByHash", params: [hash, @include_transactions]})
+    EthereumJSONRPC.request(%{id: id, method: "hmy_getBlockByHash", params: [hash, @include_transactions]})
   end
 end

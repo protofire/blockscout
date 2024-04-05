@@ -8,6 +8,7 @@ defmodule Indexer.Block.Fetcher do
   require Logger
 
   import EthereumJSONRPC, only: [quantity_to_integer: 1]
+  import Indexer.Transform.Utils, only: [decode_bench_32_if_exist: 2]
 
   alias EthereumJSONRPC.{Blocks, FetchedBeneficiaries}
   alias Explorer.Chain
@@ -69,7 +70,7 @@ defmodule Indexer.Block.Fetcher do
                 logs: Import.Runner.options(),
                 token_transfers: Import.Runner.options(),
                 tokens: Import.Runner.options(),
-                transactions: Import.Runner.options(),
+                transactions: Import.Runner.options()
               }
             ) :: Import.all_result()
 
@@ -133,12 +134,17 @@ defmodule Indexer.Block.Fetcher do
           {:ok,
            %Blocks{
              blocks_params: blocks_params,
-             transactions_params: transactions_params_without_receipts,
+             transactions_params: transactions_params,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
              errors: blocks_errors
            }}} <- {:blocks, fetched_blocks},
          blocks = TransformBlocks.transform_blocks(blocks_params),
+         transactions_params_without_receipts =
+           Enum.map(transactions_params, fn trx ->
+             trx = decode_bench_32_if_exist(trx, :from_address_hash)
+             decode_bench_32_if_exist(trx, :to_address_hash)
+           end),
          {:receipts, {:ok, receipt_params}} <- {:receipts, Receipts.fetch(state, transactions_params_without_receipts)},
          %{logs: logs, receipts: receipts} = receipt_params,
          transactions_with_receipts = Receipts.put(transactions_params_without_receipts, receipts),

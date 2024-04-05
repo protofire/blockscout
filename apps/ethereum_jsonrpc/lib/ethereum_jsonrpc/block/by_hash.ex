@@ -4,6 +4,6 @@ defmodule EthereumJSONRPC.Block.ByHash do
   """
 
   def request(%{id: id, hash: hash}, hydrated \\ true) do
-    EthereumJSONRPC.request(%{id: id, method: "eth_getBlockByHash", params: [hash, hydrated]})
+    EthereumJSONRPC.request(%{id: id, method: "hmy_getBlockByHash", params: [hash, hydrated]})
   end
 end

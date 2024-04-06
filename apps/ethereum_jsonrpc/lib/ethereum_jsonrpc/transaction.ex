@@ -193,8 +193,6 @@ defmodule EthereumJSONRPC.Transaction do
           "maxFeePerGas" => max_fee_per_gas,
           "executionNode" => execution_node_hash,
           "requestRecord" => wrapped,
-          "toShardID" => to_shard_id,
-          "shardID" => shard_id
         } = transaction
       ) do
     result = %{
@@ -216,8 +214,6 @@ defmodule EthereumJSONRPC.Transaction do
       type: type,
       max_priority_fee_per_gas: max_priority_fee_per_gas,
       max_fee_per_gas: max_fee_per_gas,
-      to_shard_id: to_shard_id,
-      shard_id: shard_id
     }
 
     # credo:disable-for-next-line
@@ -242,10 +238,11 @@ defmodule EthereumJSONRPC.Transaction do
       else
         result
       end
-
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
-      {"block_timestamp", :block_timestamp}
+      {"block_timestamp", :block_timestamp},
+      {"toShardID", :to_shard_id},
+      {"shardID", :shard_id}
     ])
   end
 
@@ -290,12 +287,11 @@ defmodule EthereumJSONRPC.Transaction do
       max_priority_fee_per_gas: max_priority_fee_per_gas,
       max_fee_per_gas: max_fee_per_gas
     }
-
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
       {"block_timestamp", :block_timestamp},
-      {"to_shard_id", :to_shard_id},
-      {"shard_id", :shard_id}
+      {"toShardID", :to_shard_id},
+      {"shardID", :shard_id}
     ])
   end
 
@@ -341,10 +337,11 @@ defmodule EthereumJSONRPC.Transaction do
       max_priority_fee_per_gas: max_priority_fee_per_gas,
       max_fee_per_gas: max_fee_per_gas
     }
-
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
-      {"block_timestamp", :block_timestamp}
+      {"block_timestamp", :block_timestamp},
+      {"toShardID", :to_shard_id},
+      {"shardID", :shard_id}
     ])
   end
 
@@ -411,10 +408,11 @@ defmodule EthereumJSONRPC.Transaction do
       else
         result
       end
-
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
-      {"block_timestamp", :block_timestamp}
+      {"block_timestamp", :block_timestamp},
+      {"toShardID", :to_shard_id},
+      {"shardID", :shard_id}
     ])
   end
 
@@ -455,10 +453,11 @@ defmodule EthereumJSONRPC.Transaction do
       transaction_index: index,
       type: type
     }
-
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
-      {"block_timestamp", :block_timestamp}
+      {"block_timestamp", :block_timestamp},
+      {"toShardID", :to_shard_id},
+      {"shardID", :shard_id}
     ])
   end
 
@@ -477,7 +476,7 @@ defmodule EthereumJSONRPC.Transaction do
           "to" => to_address_hash,
           "transactionIndex" => index,
           "v" => v,
-          "value" => value
+          "value" => value,
         } = transaction
       ) do
     result = %{
@@ -497,10 +496,58 @@ defmodule EthereumJSONRPC.Transaction do
       value: value,
       transaction_index: index
     }
-
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
-      {"block_timestamp", :block_timestamp}
+      {"block_timestamp", :block_timestamp},
+      {"toShardID", :to_shard_id},
+      {"shardID", :shard_id}
+    ])
+  end
+
+  def elixir_to_params(
+        %{
+          "blockHash" => block_hash,
+          "blockNumber" => block_number,
+          "from" => from_address_hash,
+          "gas" => gas,
+          "gasPrice" => gas_price,
+          "hash" => hash,
+          "input" => input,
+          "nonce" => nonce,
+          "r" => r,
+          "s" => s,
+          "to" => to_address_hash,
+          "transactionIndex" => index,
+          "v" => v,
+          "value" => value,
+          "shardID" => shard_id,
+          "toShardID" => to_shard_id
+        } = transaction
+      ) do
+    result = %{
+      block_hash: block_hash,
+      block_number: block_number,
+      from_address_hash: from_address_hash,
+      gas: gas,
+      gas_price: gas_price,
+      hash: hash,
+      index: index,
+      input: input,
+      nonce: nonce,
+      r: r,
+      s: s,
+      to_address_hash: to_address_hash,
+      v: v,
+      value: value,
+      transaction_index: index,
+      shard_id: shard_id,
+      to_shard_id: to_shard_id,
+
+    }
+    # IO.inspect(transaction, label: "transaction 99")
+    put_if_present(transaction, result, [
+      {"creates", :created_contract_address_hash},
+      {"block_timestamp", :block_timestamp},
     ])
   end
 
@@ -613,7 +660,7 @@ defmodule EthereumJSONRPC.Transaction do
   #
   # "txType": to avoid FunctionClauseError when indexing Wanchain
   defp entry_to_elixir({key, value})
-       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord),
+       when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord shardID toShardID),
        do: {key, value}
 
   # specific to Nethermind client

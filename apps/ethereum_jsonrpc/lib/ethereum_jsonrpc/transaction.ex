@@ -346,7 +346,7 @@ defmodule EthereumJSONRPC.Transaction do
           "maxPriorityFeePerGas" => max_priority_fee_per_gas,
           "maxFeePerGas" => max_fee_per_gas,
           "executionNode" => execution_node_hash,
-          "requestRecord" => wrapped,
+          "requestRecord" => wrapped
         } = transaction
       ) do
     result = %{
@@ -364,7 +364,7 @@ defmodule EthereumJSONRPC.Transaction do
       transaction_index: index,
       type: type,
       max_priority_fee_per_gas: max_priority_fee_per_gas,
-      max_fee_per_gas: max_fee_per_gas,
+      max_fee_per_gas: max_fee_per_gas
     }
 
     put_if_present(result, transaction, [
@@ -420,6 +420,7 @@ defmodule EthereumJSONRPC.Transaction do
       max_priority_fee_per_gas: max_priority_fee_per_gas,
       max_fee_per_gas: max_fee_per_gas
     }
+
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
       {"block_timestamp", :block_timestamp},
@@ -575,7 +576,7 @@ end
           "to" => to_address_hash,
           "transactionIndex" => index,
           "v" => v,
-          "value" => value,
+          "value" => value
         } = transaction
       ) do
     result = %{
@@ -595,6 +596,7 @@ end
       value: value,
       transaction_index: index
     }
+
     put_if_present(transaction, result, [
       {"creates", :created_contract_address_hash},
       {"block_timestamp", :block_timestamp},
@@ -640,8 +642,7 @@ end
       value: value,
       transaction_index: index,
       shard_id: shard_id,
-      to_shard_id: to_shard_id,
-
+      to_shard_id: to_shard_id
     }
     # IO.inspect(transaction, label: "transaction 99")
     put_if_present(result, transaction, [

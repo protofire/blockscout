@@ -56,9 +56,7 @@ defmodule Explorer.Chain.InternalTransaction do
           transaction_index: Transaction.transaction_index() | nil,
           value: Wei.t(),
           block_hash: Hash.Full.t(),
-          block_index: non_neg_integer(),
-          shard_id: non_neg_integer() | nil,
-          to_shard_id: non_neg_integer() | nil
+          block_index: non_neg_integer()
         }
 
   @primary_key false
@@ -78,8 +76,6 @@ defmodule Explorer.Chain.InternalTransaction do
     field(:block_number, :integer)
     field(:transaction_index, :integer)
     field(:block_index, :integer)
-    field(:shard_id, :integer)
-    field(:to_shard_id, :integer)
 
     timestamps()
 
@@ -437,7 +433,7 @@ defmodule Explorer.Chain.InternalTransaction do
     type_changeset(changeset, attrs, type)
   end
 
-  @call_optional_fields ~w(error gas_used output block_number transaction_index shard_id to_shard_id)a
+  @call_optional_fields ~w(error gas_used output block_number transaction_index)a
   @call_required_fields ~w(call_type from_address_hash gas index input to_address_hash trace_address transaction_hash value)a
   @call_allowed_fields @call_optional_fields ++ @call_required_fields
 
@@ -452,7 +448,7 @@ defmodule Explorer.Chain.InternalTransaction do
     |> unique_constraint(:index)
   end
 
-  @create_optional_fields ~w(error created_contract_code created_contract_address_hash gas_used block_number transaction_index shard_id to_shard_id)a
+  @create_optional_fields ~w(error created_contract_code created_contract_address_hash gas_used block_number transaction_index)a
   @create_required_fields ~w(from_address_hash gas index init trace_address transaction_hash value)a
   @create_allowed_fields @create_optional_fields ++ @create_required_fields
 
@@ -466,7 +462,7 @@ defmodule Explorer.Chain.InternalTransaction do
     |> unique_constraint(:index)
   end
 
-  @selfdestruct_optional_fields ~w(block_number transaction_index shard_id to_shard_id)a
+  @selfdestruct_optional_fields ~w(block_number transaction_index)a
   @selfdestruct_required_fields ~w(from_address_hash index to_address_hash trace_address transaction_hash type value)a
   @selfdestruct_allowed_fields @selfdestruct_optional_fields ++ @selfdestruct_required_fields
 
@@ -477,7 +473,7 @@ defmodule Explorer.Chain.InternalTransaction do
     |> unique_constraint(:index)
   end
 
-  @stop_optional_fields ~w(from_address_hash gas gas_used error shard_id to_shard_id)a
+  @stop_optional_fields ~w(from_address_hash gas gas_used error)a
   @stop_required_fields ~w(block_number transaction_hash transaction_index index type value trace_address)a
   @stop_allowed_fields @stop_optional_fields ++ @stop_required_fields
 

@@ -2,7 +2,7 @@ defmodule Indexer.Transform.Blocks do
   @moduledoc """
   Protocol for transforming blocks.
   """
-  import Indexer.Transform.Utils, only: [decode_bench_32_if_exist: 2]
+  import Indexer.Transform.Utils, only: [decode_bech_32_if_exist: 2]
   alias ExSecp256k1
 
   @type block :: map()
@@ -20,7 +20,7 @@ defmodule Indexer.Transform.Blocks do
 
     blocks
     |> Enum.map(&transformer.transform/1)
-    |> Enum.map(fn block -> decode_bench_32_if_exist(block, :miner_hash) end)
+    |> Enum.map(fn block -> decode_bech_32_if_exist(block, :miner_hash) end)
   end
 
   @doc """

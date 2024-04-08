@@ -1,7 +1,7 @@
 defmodule Indexer.Transform.Utils do
   require Bech32
 
-  def decode_bench_32_if_exist(object, key) do
+  def decode_bech_32_if_exist(object, key) do
     if Map.has_key?(object, key) && String.starts_with?(Map.get(object, key), "one1") do
       Map.put(object, key, decode_bench_32(Map.get(object, key)))
     else

@@ -203,7 +203,7 @@ defmodule EthereumJSONRPC.Geth do
          {:ok, txs} <-
            id_to_params
            |> Enum.map(fn {id, %{hash_data: hash_data}} ->
-             request(%{id: id, method: "eth_getTransactionByHash", params: [hash_data]})
+             request(%{id: id, method: "hmy_getTransactionByHash", params: [hash_data]})
            end)
            |> json_rpc(json_rpc_named_arguments) do
       receipts_map = Enum.into(receipts, %{}, fn %{id: id, result: receipt} -> {id, receipt} end)

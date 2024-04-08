@@ -434,7 +434,9 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
       "method" => method_name(transaction, decoded_input),
       "tx_types" => tx_types(transaction),
       "tx_tag" => GetTransactionTags.get_transaction_tags(transaction.hash, current_user(single_tx? && conn)),
-      "has_error_in_internal_txs" => transaction.has_error_in_internal_txs
+      "has_error_in_internal_txs" => transaction.has_error_in_internal_txs,
+      "shard_id" => transaction.shard_id,
+      "to_shard_id" => transaction.to_shard_id,
     }
 
     result

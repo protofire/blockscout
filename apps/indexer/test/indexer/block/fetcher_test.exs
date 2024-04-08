@@ -349,7 +349,7 @@ defmodule Indexer.Block.FetcherTest do
               assert [
                        %{
                          id: id,
-                         method: "eth_getTransactionReceipt",
+                         method: "hmy_getTransactionReceipt",
                          params: ["0x53bd884872de3e488692881baeec262e7b95234d3965248c39fe992fffd433e5"]
                        }
                      ] = json

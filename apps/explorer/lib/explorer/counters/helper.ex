@@ -30,6 +30,7 @@ defmodule Explorer.Counters.Helper do
 
   def create_cache_table(cache_name) do
     Logger.debug("Creating cache table #{cache_name}")
+
     if :ets.whereis(cache_name) == :undefined do
       :ets.new(cache_name, @ets_opts)
     end

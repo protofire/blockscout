@@ -441,6 +441,46 @@ defmodule EthereumJSONRPC.Block do
     }
   end
 
+  defp do_elixir_to_params(
+         %{
+           "difficulty" => difficulty,
+           "extraData" => extra_data,
+           "gasLimit" => gas_limit,
+           "gasUsed" => gas_used,
+           "hash" => hash,
+           "logsBloom" => logs_bloom,
+           "miner" => miner_hash,
+           "number" => number,
+           "parentHash" => parent_hash,
+           "receiptsRoot" => receipts_root,
+           "size" => size,
+           "stateRoot" => state_root,
+           "timestamp" => timestamp,
+           "transactionsRoot" => transactions_root,
+           "uncles" => uncles
+         } = elixir
+       ) do
+    %{
+      difficulty: difficulty,
+      extra_data: extra_data,
+      gas_limit: gas_limit,
+      gas_used: gas_used,
+      hash: hash,
+      logs_bloom: logs_bloom,
+      miner_hash: miner_hash,
+      mix_hash: Map.get(elixir, "mixHash", "0x0"),
+      nonce: Map.get(elixir, "nonce", 0),
+      number: number,
+      parent_hash: parent_hash,
+      receipts_root: receipts_root,
+      size: size,
+      state_root: state_root,
+      timestamp: timestamp,
+      transactions_root: transactions_root,
+      uncles: uncles
+    }
+  end
+
   defp chain_type_fields(params, elixir) do
     case Application.get_env(:explorer, :chain_type) do
       "rsk" ->

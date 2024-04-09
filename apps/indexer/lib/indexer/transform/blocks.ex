@@ -2,7 +2,7 @@ defmodule Indexer.Transform.Blocks do
   @moduledoc """
   Protocol for transforming blocks.
   """
-  import Indexer.Transform.Utils, only: [decode_bech_32_if_exist: 2]
+  import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32_if_exist: 2]
   alias ExSecp256k1
 
   @type block :: map()

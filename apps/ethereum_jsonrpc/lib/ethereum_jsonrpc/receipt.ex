@@ -5,6 +5,7 @@ defmodule EthereumJSONRPC.Receipt do
   """
 
   import EthereumJSONRPC, only: [quantity_to_integer: 1]
+  import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32: 1]
 
   alias EthereumJSONRPC.Logs
 
@@ -253,8 +254,14 @@ defmodule EthereumJSONRPC.Receipt do
   # hash format
   # gas is passed in from the `t:EthereumJSONRPC.Transaction.params/0` to allow pre-Byzantium status to be derived
   defp entry_to_elixir({key, _} = entry)
-       when key in ~w(blockHash contractAddress from gas logsBloom root to transactionHash revertReason type effectiveGasPrice),
+       when key in ~w(blockHash contractAddress gas logsBloom root transactionHash revertReason type effectiveGasPrice),
        do: {:ok, entry}
+
+  defp entry_to_elixir({key, value})
+       when key in ~w(from to) do
+    result = decode_bech_32(value)
+    {:ok, {key, result}}
+  end
 
   defp entry_to_elixir({key, quantity})
        when key in ~w(blockNumber cumulativeGasUsed gasUsed transactionIndex) do
@@ -324,8 +331,8 @@ defmodule EthereumJSONRPC.Receipt do
     :ignore
   end
 
-   # harmony fields
-   defp entry_to_elixir({key, _}) when key in ~w(shardID) do
+  # harmony fields
+  defp entry_to_elixir({key, _}) when key in ~w(shardID) do
     :ignore
   end
 

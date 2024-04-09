@@ -324,6 +324,11 @@ defmodule EthereumJSONRPC.Receipt do
     :ignore
   end
 
+   # harmony fields
+   defp entry_to_elixir({key, _}) when key in ~w(shardID) do
+    :ignore
+  end
+
   defp entry_to_elixir({key, value}) do
     {:error, {:unknown_key, %{key: key, value: value}}}
   end

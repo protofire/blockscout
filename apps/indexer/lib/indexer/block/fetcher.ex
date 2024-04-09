@@ -427,6 +427,7 @@ defmodule Indexer.Block.Fetcher do
 
   def fetch_beneficiaries_manual(block, transactions) do
     block
+    |> Enum.filter(fn transaction -> Map.has_key?(transaction, :miner_hash) end)
     |> Block.block_reward_by_parts(transactions)
     |> reward_parts_to_beneficiaries()
   end

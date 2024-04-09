@@ -6,6 +6,7 @@ defmodule EthereumJSONRPC.Receipt do
   use Utils.CompileTimeEnvHelper, chain_type: [:explorer, :chain_type]
 
   import EthereumJSONRPC, only: [quantity_to_integer: 1]
+  import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32: 1]
 
   alias EthereumJSONRPC.Logs
 
@@ -389,6 +390,12 @@ defmodule EthereumJSONRPC.Receipt do
                       revertReason type l1FeeScalar),
        do: {:ok, entry}
 
+  defp entry_to_elixir({key, value})
+       when key in ~w(from to) do
+    result = decode_bech_32(value)
+    {:ok, {key, result}}
+  end
+
   defp entry_to_elixir({key, quantity})
        when key in ~w(blockNumber cumulativeGasUsed gasUsed transactionIndex blobGasUsed
                       blobGasPrice l1Fee l1GasPrice l1GasUsed effectiveGasPrice gasUsedForL1
@@ -458,8 +465,8 @@ defmodule EthereumJSONRPC.Receipt do
     :ignore
   end
 
-   # harmony fields
-   defp entry_to_elixir({key, _}) when key in ~w(shardID) do
+  # harmony fields
+  defp entry_to_elixir({key, _}) when key in ~w(shardID) do
     :ignore
   end
 

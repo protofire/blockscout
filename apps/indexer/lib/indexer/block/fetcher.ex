@@ -8,7 +8,7 @@ defmodule Indexer.Block.Fetcher do
   require Logger
 
   import EthereumJSONRPC, only: [quantity_to_integer: 1]
-  import Indexer.Transform.Utils, only: [decode_bech_32_if_exist: 2]
+  import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32_if_exist: 2]
 
   alias EthereumJSONRPC.{Blocks, FetchedBeneficiaries}
   alias Explorer.Chain

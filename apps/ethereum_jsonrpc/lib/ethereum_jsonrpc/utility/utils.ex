@@ -2,7 +2,8 @@ defmodule EthereumJSONRPC.Utility.Bech do
   require Bech32
 
   def decode_bech_32_if_exist(object, key) do
-    if Map.has_key?(object, key) && String.starts_with?(Map.get(object, key), "one1") do
+    value = Map.get(object, key)
+    if !is_nil(value) &&  String.starts_with?(value, "one1") do
       Map.put(object, key, decode_bech_32(Map.get(object, key)))
     else
       object

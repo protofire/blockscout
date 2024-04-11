@@ -46,8 +46,6 @@ defmodule EthereumJSONRPC.Blocks do
           %{acc | errors: [error | errors]}
       end)
 
-
-
     elixir_blocks = to_elixir(blocks)
 
     elixir_uncles = elixir_to_uncles(elixir_blocks)

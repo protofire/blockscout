@@ -7,7 +7,18 @@ defmodule Explorer.Chain.Block do
 
   use Explorer.Schema
 
-  alias Explorer.Chain.{Address, Block, Gas, Hash, PendingBlockOperation, Transaction, Wei, Withdrawal, StakingTransaction}
+  alias Explorer.Chain.{
+    Address,
+    Block,
+    Gas,
+    Hash,
+    PendingBlockOperation,
+    Transaction,
+    Wei,
+    Withdrawal,
+    StakingTransaction
+  }
+
   alias Explorer.Chain.Block.{EmissionReward, Reward, SecondDegreeRelation}
   alias Explorer.Repo
 

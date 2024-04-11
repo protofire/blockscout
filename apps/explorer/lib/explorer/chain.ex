@@ -62,7 +62,7 @@ defmodule Explorer.Chain do
     Transaction,
     Wei,
     Withdrawal,
-    StakingTransaction,
+    StakingTransaction
   }
 
   alias Explorer.Chain.Block.Reader.General, as: BlockReaderGeneral

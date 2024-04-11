@@ -93,7 +93,8 @@ defmodule Indexer.Block.Fetcher do
                 logs: Import.Runner.options(),
                 token_transfers: Import.Runner.options(),
                 tokens: Import.Runner.options(),
-                transactions: Import.Runner.options()
+                transactions: Import.Runner.options(),
+                staking_transactions: Import.Runner.options(),
               }
             ) :: Import.all_result()
 
@@ -159,6 +160,7 @@ defmodule Indexer.Block.Fetcher do
            %Blocks{
              blocks_params: blocks_params,
              transactions_params: transactions_params,
+             staking_transactions_params: staking_transactions_params,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
              errors: blocks_errors
@@ -257,6 +259,7 @@ defmodule Indexer.Block.Fetcher do
            token_transfers: %{params: token_transfers},
            tokens: %{params: tokens},
            transactions: %{params: transactions_with_receipts},
+           staking_transactions: %{params: staking_transactions_params},
            withdrawals: %{params: withdrawals_params},
            token_instances: %{params: token_instances},
            signed_authorizations: %{params: SignedAuthorizations.parse(transactions_with_receipts)}

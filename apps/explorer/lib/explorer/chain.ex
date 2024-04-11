@@ -61,7 +61,8 @@ defmodule Explorer.Chain do
     TokenTransfer,
     Transaction,
     Wei,
-    Withdrawal
+    Withdrawal,
+    StakingTransaction,
   }
 
   alias Explorer.Chain.Block.Reader.General, as: BlockReaderGeneral
@@ -164,6 +165,20 @@ defmodule Explorer.Chain do
   @type api? :: {:api?, true | false}
   @type ip :: {:ip, String.t()}
   @type show_scam_tokens? :: {:show_scam_tokens?, true | false}
+
+  @spec address_to_staking_transactions(Hash.Address.t(), [paging_options | necessity_by_association_option]) :: [
+          StakingTransaction.t()
+        ]
+  def address_to_staking_transactions(address_hash, options \\ []) do
+    paging_options = Keyword.get(options, :paging_options, @default_paging_options)
+    necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
+
+    address_hash
+    |> StakingTransaction.address_hash_to_staking_transactions_query()
+    |> join_associations(necessity_by_association)
+    |> handle_staking_transactions_paging_options(paging_options)
+    |> select_repo(options).all()
+  end
 
   def wrapped_union_subquery(query) do
     from(
@@ -447,6 +462,21 @@ defmodule Explorer.Chain do
     |> select_repo(options).all()
   end
 
+  @spec block_to_staking_transactions(Hash.Full.t(), [paging_options | necessity_by_association_option]) ::
+          [
+            StakingTransaction.t()
+          ]
+  def block_to_staking_transactions(block_hash, options \\ []) when is_list(options) do
+    paging_options = Keyword.get(options, :paging_options, @default_paging_options)
+    necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
+
+    block_hash
+    |> StakingTransaction.block_hash_to_staking_transactions_query()
+    |> join_associations(necessity_by_association)
+    |> handle_staking_transactions_paging_options(paging_options)
+    |> select_repo(options).all()
+  end
+
   @spec execution_node_to_transactions(Hash.Address.t(), [paging_options | necessity_by_association_option | api?()]) ::
           [Transaction.t()]
   def execution_node_to_transactions(execution_node_hash, options \\ []) when is_list(options) do
@@ -548,6 +578,17 @@ defmodule Explorer.Chain do
       from(
         transaction in Transaction,
         where: transaction.block_hash == ^block_hash
+      )
+
+    Repo.aggregate(query, :count, :hash)
+  end
+
+  @spec block_to_staking_transaction_count(Hash.Full.t()) :: non_neg_integer()
+  def block_to_staking_transaction_count(block_hash) do
+    query =
+      from(
+        staking_transaction in StakingTransaction,
+        where: staking_transaction.block_hash == ^block_hash
       )
 
     Repo.aggregate(query, :count, :hash)
@@ -2697,6 +2738,14 @@ defmodule Explorer.Chain do
   defp handle_withdrawals_paging_options(query, paging_options) do
     query
     |> Withdrawal.page_withdrawals(paging_options)
+    |> limit(^paging_options.page_size)
+  end
+
+  defp handle_staking_transactions_paging_options(query, nil), do: query
+
+  defp handle_staking_transactions_paging_options(query, paging_options) do
+    query
+    |> StakingTransaction.page_staking_transactions(paging_options)
     |> limit(^paging_options.page_size)
   end
 

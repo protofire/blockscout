@@ -522,7 +522,7 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
       "has_error_in_internal_transactions" => transaction.has_error_in_internal_transactions,
       "authorization_list" => authorization_list(transaction.signed_authorizations),
       "shard_id" => transaction.shard_id,
-      "to_shard_id" => transaction.to_shard_id,
+      "to_shard_id" => transaction.to_shard_id
     }
 
     result

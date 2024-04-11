@@ -183,6 +183,8 @@ defmodule Explorer.Chain.Block.Schema do
 
         has_one(:pending_operations, PendingBlockOperation, foreign_key: :block_hash, references: :hash)
 
+        has_many(:staking_transactions, StakingTransaction, foreign_key: :block_hash)
+
         unquote_splicing(@chain_type_fields)
       end
     end
@@ -201,7 +203,7 @@ defmodule Explorer.Chain.Block do
   use Explorer.Schema
   use Utils.CompileTimeEnvHelper, chain_type: [:explorer, :chain_type]
 
-  alias Explorer.Chain.{Block, Hash, Transaction, Wei}
+  alias Explorer.Chain.{Block, Hash, Transaction, Wei, StakingTransaction}
   alias Explorer.Chain.Block.{EmissionReward, Reward}
   alias Explorer.{Helper, Repo}
   alias Explorer.Utility.MissingRangesManipulator

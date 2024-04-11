@@ -7,7 +7,7 @@ defmodule EthereumJSONRPC.Block do
 
   import EthereumJSONRPC, only: [quantity_to_integer: 1, timestamp_to_datetime: 1]
 
-  alias EthereumJSONRPC.{Transactions, Uncles, Withdrawals}
+  alias EthereumJSONRPC.{Transactions, StakingTransactions, Uncles, Withdrawals}
 
   alias EthereumJSONRPC.Zilliqa.AggregateQuorumCertificate, as: ZilliqaAggregateQuorumCertificate
   alias EthereumJSONRPC.Zilliqa.QuorumCertificate, as: ZilliqaQuorumCertificate
@@ -710,6 +710,11 @@ defmodule EthereumJSONRPC.Block do
 
   def elixir_to_transactions(_), do: []
 
+  @spec elixir_to_staking_transactions(elixir) :: StakingTransactions.elixir()
+  def elixir_to_staking_transactions(%{"stakingTransactions" => staking_transactions}), do: staking_transactions
+
+  def elixir_to_staking_transactions(_), do: []
+
   @doc """
   Get `t:EthereumJSONRPC.Uncles.elixir/0` from `t:elixir/0`.
 
@@ -981,6 +986,10 @@ defmodule EthereumJSONRPC.Block do
 
   defp entry_to_elixir({"transactions" = key, transactions}, %{"timestamp" => block_timestamp}) do
     {key, Transactions.to_elixir(transactions, timestamp_to_datetime(block_timestamp))}
+  end
+
+  defp entry_to_elixir({"stakingTransactions" = key, staking_transactions}, %{"timestamp" => block_timestamp}) do
+    {key, StakingTransactions.to_elixir(staking_transactions, timestamp_to_datetime(block_timestamp))}
   end
 
   defp entry_to_elixir({"withdrawals" = key, nil}, _block) do

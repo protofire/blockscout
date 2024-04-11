@@ -4,7 +4,7 @@ defmodule EthereumJSONRPC.Blocks do
   and [`eth_getBlockByNumber`](https://github.com/ethereum/wiki/wiki/JSON-RPC#eth_getblockbynumber) from batch requests.
   """
 
-  alias EthereumJSONRPC.{Block, Transactions, Transport, Uncles, Withdrawals}
+  alias EthereumJSONRPC.{Block, Transactions, Transport, Uncles, Withdrawals, StakingTransactions}
 
   @type elixir :: [Block.elixir()]
   @type params :: [Block.params()]
@@ -12,6 +12,7 @@ defmodule EthereumJSONRPC.Blocks do
           blocks_params: [map()],
           block_second_degree_relations_params: [map()],
           transactions_params: [map()],
+          staking_transactions_params: [map()],
           withdrawals_params: Withdrawals.params(),
           errors: [Transport.error()]
         }
@@ -19,6 +20,7 @@ defmodule EthereumJSONRPC.Blocks do
   defstruct blocks_params: [],
             block_second_degree_relations_params: [],
             transactions_params: [],
+            staking_transactions_params: [],
             withdrawals_params: [],
             errors: []
 
@@ -44,14 +46,18 @@ defmodule EthereumJSONRPC.Blocks do
           %{acc | errors: [error | errors]}
       end)
 
+
+
     elixir_blocks = to_elixir(blocks)
 
     elixir_uncles = elixir_to_uncles(elixir_blocks)
     elixir_transactions = elixir_to_transactions(elixir_blocks)
+    elixir_staking_transactions = elixir_to_staking_transactions(elixir_blocks)
     elixir_withdrawals = elixir_to_withdrawals(elixir_blocks)
 
     block_second_degree_relations_params = Uncles.elixir_to_params(elixir_uncles)
     transactions_params = Transactions.elixir_to_params(elixir_transactions)
+    staking_transactions_params = StakingTransactions.elixir_to_params(elixir_staking_transactions)
     withdrawals_params = Withdrawals.elixir_to_params(elixir_withdrawals)
     blocks_params = elixir_to_params(elixir_blocks)
 
@@ -60,6 +66,7 @@ defmodule EthereumJSONRPC.Blocks do
       blocks_params: blocks_params,
       block_second_degree_relations_params: block_second_degree_relations_params,
       transactions_params: transactions_params,
+      staking_transactions_params: staking_transactions_params,
       withdrawals_params: withdrawals_params
     }
   end
@@ -219,6 +226,14 @@ defmodule EthereumJSONRPC.Blocks do
   @spec elixir_to_transactions(elixir) :: Transactions.elixir()
   def elixir_to_transactions(elixir) when is_list(elixir) do
     Enum.flat_map(elixir, &Block.elixir_to_transactions/1)
+  end
+
+  @doc """
+  Extracts the `t:EthereumJSONRPC.StakingTransactions.elixir/0` from the `t:elixir/0`.
+  """
+  @spec elixir_to_staking_transactions(elixir) :: StakingTransactions.elixir()
+  def elixir_to_staking_transactions(elixir) when is_list(elixir) do
+    Enum.flat_map(elixir, &Block.elixir_to_staking_transactions/1)
   end
 
   @doc """

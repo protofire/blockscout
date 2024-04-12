@@ -60,12 +60,12 @@ defmodule Explorer.Chain.StakingTransaction do
   @type t :: %__MODULE__{
           hash: Hash.t(),
           nonce: non_neg_integer(),
-          # block: %Ecto.Association.NotLoaded{} | Block.t() | nil,
+          block: %Ecto.Association.NotLoaded{} | Block.t() | nil,
           block_hash: Hash.t() | nil,
           block_number: Block.block_number() | nil,
           transaction_index: transaction_index | nil,
           timestamp: non_neg_integer(),
-          # from_address: %Ecto.Association.NotLoaded{} | Address.t(),
+          from_address: %Ecto.Association.NotLoaded{} | Address.t(),
           from_address_hash: Hash.Address.t(),
           value: Wei.t() | nil,
           gas: Decimal.t(),
@@ -124,10 +124,8 @@ defmodule Explorer.Chain.StakingTransaction do
 
     timestamps()
 
-    # belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: Hash.Full)
-    # belongs_to(:from_address, Address, foreign_key: :from_address_hash, references: :hash, type: Hash.Address)
-    field(:block_hash, Hash.Full)
-    field(:from_address_hash, Hash.Address)
+    belongs_to(:block, Block, foreign_key: :block_hash, references: :hash, type: Hash.Full)
+    belongs_to(:from_address, Address, foreign_key: :from_address_hash, references: :hash, type: Hash.Address)
   end
 
   def changeset(%__MODULE__{} = t, attrs \\ %{}) do

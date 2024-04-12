@@ -49,7 +49,7 @@ defmodule Explorer.Chain.Import.Runner.StakingTransactions do
       Instrumenter.block_import_stage_runner(
         fn -> insert(repo, changes_list, insert_options) end,
         :block_referencing,
-        :transactions,
+        :staking_transactions,
         :staking_transactions
       )
     end)

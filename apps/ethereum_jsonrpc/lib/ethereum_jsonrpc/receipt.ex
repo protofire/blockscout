@@ -259,11 +259,13 @@ defmodule EthereumJSONRPC.Receipt do
 
   defp entry_to_elixir({key, value})
        when key in ~w(from to) do
-    result = if String.starts_with?(value, "one1") do
-      decode_bech_32(value)
-    else
-      value
-    end
+    result =
+      if String.starts_with?(value, "one1") do
+        decode_bech_32(value)
+      else
+        value
+      end
+
     {:ok, {key, result}}
   end
 

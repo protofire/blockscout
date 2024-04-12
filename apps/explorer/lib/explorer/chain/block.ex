@@ -7,7 +7,18 @@ defmodule Explorer.Chain.Block do
 
   use Explorer.Schema
 
-  alias Explorer.Chain.{Address, Block, Gas, Hash, PendingBlockOperation, Transaction, Wei, Withdrawal}
+  alias Explorer.Chain.{
+    Address,
+    Block,
+    Gas,
+    Hash,
+    PendingBlockOperation,
+    Transaction,
+    Wei,
+    Withdrawal,
+    StakingTransaction
+  }
+
   alias Explorer.Chain.Block.{EmissionReward, Reward, SecondDegreeRelation}
   alias Explorer.Repo
 
@@ -144,6 +155,8 @@ defmodule Explorer.Chain.Block do
     has_many(:withdrawals, Withdrawal, foreign_key: :block_hash)
 
     has_one(:pending_operations, PendingBlockOperation, foreign_key: :block_hash)
+
+    has_many(:staking_transactions, StakingTransaction, foreign_key: :block_hash)
   end
 
   def changeset(%__MODULE__{} = block, attrs) do

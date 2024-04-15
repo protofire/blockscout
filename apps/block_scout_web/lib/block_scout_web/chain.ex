@@ -423,6 +423,16 @@ defmodule BlockScoutWeb.Chain do
     end
   end
 
+  def paging_options(%{"index" => timestamp_string}) when is_binary(timestamp_string) do
+    case Integer.parse(timestamp_string) do
+      {timestamp, ""} ->
+        [paging_options: %{@default_paging_options | key: {timestamp}}]
+
+      _ ->
+        [paging_options: @default_paging_options]
+    end
+  end
+
   def paging_options(%{"index" => index}) when is_integer(index) do
     [paging_options: %{@default_paging_options | key: {index}}]
   end

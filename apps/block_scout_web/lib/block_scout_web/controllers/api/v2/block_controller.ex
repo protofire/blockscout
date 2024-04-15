@@ -27,7 +27,8 @@ defmodule BlockScoutWeb.API.V2.BlockController do
 
   alias BlockScoutWeb.API.V2.{
     TransactionView,
-    WithdrawalView
+    WithdrawalView,
+    StakingTransactionView
   }
 
   alias Explorer.Chain
@@ -107,6 +108,13 @@ defmodule BlockScoutWeb.API.V2.BlockController do
         :optional,
       [from_address: [:scam_badge, :names, :smart_contract, proxy_implementations_association()]] => :optional,
       [to_address: [:scam_badge, :names, :smart_contract, proxy_implementations_association()]] => :optional
+    }
+  ]
+
+  @staking_transaction_necessity_by_association [
+    necessity_by_association: %{
+      :block => :optional,
+      [from_address: :names] => :optional
     }
   ]
 
@@ -335,6 +343,36 @@ defmodule BlockScoutWeb.API.V2.BlockController do
         internal_transactions: internal_transactions,
         next_page_params: next_page_params,
         block: block
+      })
+    end
+  end
+
+  def staking_transactions(conn, %{"block_hash_or_number" => block_hash_or_number} = params) do
+    with {:ok, type, value} <- parse_block_hash_or_number_param(block_hash_or_number),
+         {:ok, block} <- fetch_block(type, value, @api_true) do
+      full_options =
+        @staking_transaction_necessity_by_association
+        |> Keyword.merge(put_key_value_to_paging_options(paging_options(params), :is_index_in_asc_order, true))
+        |> Keyword.merge(@api_true)
+
+      transactions_plus_one = Chain.block_to_staking_transactions(block.hash, full_options)
+
+      {transactions, next_page} = split_list_by_page(transactions_plus_one)
+
+      next_page_params =
+        next_page
+        |> next_page_params(
+          transactions,
+          delete_parameters_from_next_page_params(params),
+          &StakingTransaction.next_page_params/1
+        )
+
+      conn
+      |> put_status(200)
+      |> put_view(StakingTransactionView)
+      |> render(:staking_transactions, %{
+        transactions: transactions |> maybe_preload_ens(),
+        next_page_params: next_page_params
       })
     end
   end

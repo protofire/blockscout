@@ -152,8 +152,8 @@ defmodule Indexer.Transform.Addresses do
     staking_transactions: [
       [
         %{from: :block_number, to: :fetched_coin_balance_block_number},
-        %{from: :from_address_hash, to: :hash},
-      ],
+        %{from: :from_address_hash, to: :hash}
+      ]
     ]
   }
 

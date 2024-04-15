@@ -1409,6 +1409,28 @@ defmodule Explorer.Chain do
     end
   end
 
+  @spec hash_to_staking_transaction(Hash.Full.t(), [necessity_by_association_option | api?]) ::
+          {:ok, StakingTransaction.t()} | {:error, :not_found}
+  def hash_to_staking_transaction(
+        %Hash{byte_count: unquote(Hash.Full.byte_count())} = hash,
+        options \\ []
+      )
+      when is_list(options) do
+    necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
+
+    StakingTransaction
+    |> where(hash: ^hash)
+    |> join_associations(necessity_by_association)
+    |> select_repo(options).one()
+    |> case do
+      nil ->
+        {:error, :not_found}
+
+      transaction ->
+        {:ok, transaction}
+    end
+  end
+
   # preload_to_detect_tt?: we don't need to preload more than one token transfer in case the tx inside the list (we don't show any token transfers on tx tile in new UI)
   def preload_token_transfers(
         %Transaction{hash: tx_hash, block_hash: block_hash} = transaction,

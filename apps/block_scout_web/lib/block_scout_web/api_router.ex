@@ -225,6 +225,7 @@ defmodule BlockScoutWeb.ApiRouter do
       get("/:block_hash_or_number", V2.BlockController, :block)
       get("/:block_hash_or_number/transactions", V2.BlockController, :transactions)
       get("/:block_hash_or_number/withdrawals", V2.BlockController, :withdrawals)
+      get("/:block_hash_or_number/staking-transactions", V2.BlockController, :staking_transactions)
     end
 
     scope "/addresses" do
@@ -235,6 +236,7 @@ defmodule BlockScoutWeb.ApiRouter do
       get("/:address_hash_param/token-balances", V2.AddressController, :token_balances)
       get("/:address_hash_param/tokens", V2.AddressController, :tokens)
       get("/:address_hash_param/transactions", V2.AddressController, :transactions)
+      get("/:address_hash_param/staking-transactions", V2.AddressController, :staking_transactions)
       get("/:address_hash_param/token-transfers", V2.AddressController, :token_transfers)
       get("/:address_hash_param/internal-transactions", V2.AddressController, :internal_transactions)
       get("/:address_hash_param/logs", V2.AddressController, :logs)
@@ -244,6 +246,10 @@ defmodule BlockScoutWeb.ApiRouter do
       get("/:address_hash_param/withdrawals", V2.AddressController, :withdrawals)
       get("/:address_hash_param/nft", V2.AddressController, :nft_list)
       get("/:address_hash_param/nft/collections", V2.AddressController, :nft_collections)
+    end
+
+    scope "/staking-transactions" do
+      get("/:staking_transactions_hash_param", V2.StakingTransactionController, :staking_transaction)
     end
 
     scope "/tokens" do

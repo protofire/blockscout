@@ -25,7 +25,8 @@ defmodule Explorer.Chain.Address.Counters do
     Log,
     TokenTransfer,
     Transaction,
-    Withdrawal
+    Withdrawal,
+    StakingTransaction
   }
 
   alias Explorer.Chain.Celo.ElectionReward, as: CeloElectionReward
@@ -35,11 +36,15 @@ defmodule Explorer.Chain.Address.Counters do
   @typep counter :: non_neg_integer() | nil
 
   @counters_limit 51
-  @types [:validations, :transactions, :token_transfers, :token_balances, :logs, :withdrawals, :internal_transactions]
+  @types [:validations, :transactions, :token_transfers, :token_balances, :logs, :withdrawals, :internal_transactions, :staking_txs]
   @transactions_types [:transactions_from, :transactions_to, :transactions_contract]
 
   defp address_hash_to_logs_query(address_hash) do
     from(l in Log, where: l.address_hash == ^address_hash)
+  end
+
+  defp address_hash_to_staking_transactions_query(address_hash) do
+    from(st in StakingTransaction, where: st.from_address_hash == ^address_hash)
   end
 
   defp address_hash_to_validated_blocks_query(address_hash) do
@@ -448,6 +453,15 @@ defmodule Explorer.Chain.Address.Counters do
         nil
       end
 
+    staking_txs_count_task =
+      configure_task(
+        :staking_txs,
+        cached_counters,
+        address_hash_to_staking_transactions_query(address_hash),
+        address_hash,
+        options
+      )
+
     map =
       [
         validations_count_task,
@@ -459,7 +473,8 @@ defmodule Explorer.Chain.Address.Counters do
         logs_count_task,
         withdrawals_count_task,
         internal_transactions_count_task,
-        celo_election_rewards_count_task
+        celo_election_rewards_count_task,
+        staking_txs_count_task
       ]
       |> Enum.reject(&is_nil/1)
       |> Task.yield_many(:timer.seconds(1))

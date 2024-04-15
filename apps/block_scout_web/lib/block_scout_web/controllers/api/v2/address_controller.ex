@@ -1125,6 +1125,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
         transactions: :transactions_count,
         token_transfers: :token_transfers_count,
         token_balances: :token_balances_count,
+        staking_transactions: :staking_transactions_count,
         logs: :logs_count,
         withdrawals: :withdrawals_count,
         internal_transactions: :internal_transactions_count,

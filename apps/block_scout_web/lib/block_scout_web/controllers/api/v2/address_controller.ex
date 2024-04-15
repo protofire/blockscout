@@ -462,7 +462,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   def tabs_counters(conn, %{"address_hash_param" => address_hash_string} = params) do
     with {:ok, address_hash, _address} <- validate_address(address_hash_string, params) do
-      {validations, transactions, token_transfers, token_balances, logs, withdrawals, internal_txs} =
+      {validations, transactions, token_transfers, token_balances, logs, withdrawals, internal_txs, staking_txs} =
         Counters.address_limited_counters(address_hash, @api_true)
 
       conn
@@ -470,6 +470,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
       |> json(%{
         validations_count: validations,
         transactions_count: transactions,
+        staking_transactions_count: staking_txs,
         token_transfers_count: token_transfers,
         token_balances_count: token_balances,
         logs_count: logs,

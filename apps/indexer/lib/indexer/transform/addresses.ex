@@ -505,6 +505,12 @@ defmodule Indexer.Transform.Addresses do
               required(:account_address_hash) => String.t(),
               required(:group_address_hash) => String.t()
             }
+          ],
+          optional(:staking_transactions) => [
+            %{
+              required(:from_address_hash) => String.t(),
+              required(:block_number) => non_neg_integer()
+            }
           ]
         }) :: [params]
   def extract_addresses(fetched_data, options \\ []) when is_map(fetched_data) and is_list(options) do

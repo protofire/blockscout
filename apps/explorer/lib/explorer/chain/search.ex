@@ -636,6 +636,7 @@ defmodule Explorer.Chain.Search do
       transaction_search_fields =
         search_fields()
         |> Map.put(:transaction_hash, dynamic([transaction: transaction], transaction.hash))
+        |> Map.put(:tx_eth_hash, dynamic([transaction], transaction.eth_hash))
         |> Map.put(:block_hash, dynamic([transaction: transaction], transaction.block_hash))
         |> Map.put(:type, "transaction")
         |> Map.put(:block_number, dynamic([transaction: transaction], transaction.block_number))
@@ -651,6 +652,7 @@ defmodule Explorer.Chain.Search do
       transaction_search_fields =
         search_fields()
         |> Map.put(:transaction_hash, dynamic([transaction: transaction], transaction.hash))
+        |> Map.put(:tx_eth_hash, dynamic([transaction, _], transaction.eth_hash))
         |> Map.put(:block_hash, dynamic([transaction: transaction], transaction.block_hash))
         |> Map.put(:type, "transaction")
         |> Map.put(:block_number, dynamic([transaction: transaction], transaction.block_number))
@@ -1015,6 +1017,7 @@ defmodule Explorer.Chain.Search do
     %{
       address_hash: dynamic(type(^nil, :binary)),
       transaction_hash: dynamic(type(^nil, :binary)),
+      tx_eth_hash: dynamic([_], type(^nil, :binary)),
       user_operation_hash: dynamic(type(^nil, :binary)),
       blob_hash: dynamic(type(^nil, :binary)),
       block_hash: dynamic(type(^nil, :binary)),

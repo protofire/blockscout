@@ -17,6 +17,8 @@ defmodule EthereumJSONRPC.Transaction do
       put_if_present: 3
     ]
 
+  import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32: 1]
+
   alias EthereumJSONRPC
   alias EthereumJSONRPC.SignedAuthorization
 
@@ -166,6 +168,7 @@ defmodule EthereumJSONRPC.Transaction do
           gas: non_neg_integer(),
           gas_price: non_neg_integer(),
           hash: EthereumJSONRPC.hash(),
+          eth_hash: EthereumJSONRPC.hash(),
           index: non_neg_integer(),
           input: String.t(),
           nonce: non_neg_integer(),
@@ -334,6 +337,7 @@ defmodule EthereumJSONRPC.Transaction do
           "gas" => gas,
           "gasPrice" => gas_price,
           "hash" => hash,
+          "ethHash" => eth_hash,
           "input" => input,
           "nonce" => nonce,
           "r" => r,
@@ -356,6 +360,7 @@ defmodule EthereumJSONRPC.Transaction do
       gas: gas,
       gas_price: gas_price,
       hash: hash,
+      eth_hash: eth_hash,
       index: index,
       input: input,
       nonce: nonce,
@@ -387,6 +392,7 @@ defmodule EthereumJSONRPC.Transaction do
           "gas" => gas,
           "gasPrice" => gas_price,
           "hash" => hash,
+          "ethHash" => eth_hash,
           "input" => input,
           "nonce" => nonce,
           "r" => r,
@@ -407,6 +413,7 @@ defmodule EthereumJSONRPC.Transaction do
       gas: gas,
       gas_price: gas_price,
       hash: hash,
+      eth_hash: eth_hash,
       index: index,
       input: input,
       nonce: nonce,
@@ -438,6 +445,7 @@ defmodule EthereumJSONRPC.Transaction do
            "from" => from_address_hash,
            "gas" => gas,
            "hash" => hash,
+           "ethHash" => eth_hash,
            "input" => input,
            "nonce" => nonce,
            "transactionIndex" => index,
@@ -454,6 +462,7 @@ defmodule EthereumJSONRPC.Transaction do
       gas: gas,
       gas_price: nil,
       hash: hash,
+      eth_hash: eth_hash,
       index: index,
       input: input,
       nonce: nonce,
@@ -486,6 +495,7 @@ defmodule EthereumJSONRPC.Transaction do
            "gas" => gas,
            "gasPrice" => gas_price,
            "hash" => hash,
+           "ethHash" => eth_hash,
            "input" => input,
            "nonce" => nonce,
            "transactionIndex" => index,
@@ -500,6 +510,7 @@ defmodule EthereumJSONRPC.Transaction do
       gas: gas,
       gas_price: gas_price,
       hash: hash,
+      eth_hash: eth_hash,
       index: index,
       input: input,
       nonce: nonce,
@@ -529,6 +540,7 @@ defmodule EthereumJSONRPC.Transaction do
            "gas" => gas,
            "gasPrice" => gas_price,
            "hash" => hash,
+           "ethHash" => eth_hash,
            "input" => input,
            "nonce" => nonce,
            "transactionIndex" => index,
@@ -542,6 +554,7 @@ defmodule EthereumJSONRPC.Transaction do
       gas: gas,
       gas_price: gas_price,
       hash: hash,
+      eth_hash: eth_hash,
       index: index,
       input: input,
       nonce: nonce,
@@ -569,6 +582,7 @@ end
           "gas" => gas,
           "gasPrice" => gas_price,
           "hash" => hash,
+          "ethHash" => eth_hash,
           "input" => input,
           "nonce" => nonce,
           "r" => r,
@@ -586,6 +600,7 @@ end
       gas: gas,
       gas_price: gas_price,
       hash: hash,
+      eth_hash: eth_hash,
       index: index,
       input: input,
       nonce: nonce,
@@ -613,6 +628,7 @@ end
           "gas" => gas,
           "gasPrice" => gas_price,
           "hash" => hash,
+          "ethHash" => eth_hash,
           "input" => input,
           "nonce" => nonce,
           "r" => r,
@@ -632,6 +648,7 @@ end
       gas: gas,
       gas_price: gas_price,
       hash: hash,
+      eth_hash: eth_hash,
       index: index,
       input: input,
       nonce: nonce,
@@ -868,12 +885,16 @@ end
        when key in ~w(blockHash condition creates from hash input jsonrpc publicKey raw to txType executionNode requestRecord blobVersionedHashes requestId shardID toShardID),
        do: {key, value}
 
-  defp entry_to_elixir({key, value}) when key in ~w(to) do
-    if value == "" do
-      {key, nil}
+  defp entry_to_elixir({key, value}) when key in ~w(from to) and value !== "" do
+    if String.starts_with?(value, "one") do
+      {key, decode_bech_32(value)}
     else
       {key, value}
     end
+  end
+
+  defp entry_to_elixir({key, value}) when key in ~w(to) and value == "" do
+    {key, nil}
   end
 
   # specific to Nethermind client

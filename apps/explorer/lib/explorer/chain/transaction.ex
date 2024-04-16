@@ -334,7 +334,7 @@ defmodule Explorer.Chain.Transaction do
   alias Explorer.SmartContract.SigProviderInterface
 
   @optional_attrs ~w(max_priority_fee_per_gas max_fee_per_gas block_hash block_number block_consensus block_timestamp created_contract_address_hash cumulative_gas_used earliest_processing_start
-                     error gas_price gas_used index created_contract_code_indexed_at status to_address_hash revert_reason type has_error_in_internal_txs to_shard_id shard_id)a
+                     error gas_price gas_used index created_contract_code_indexed_at status to_address_hash revert_reason type has_error_in_internal_txs to_shard_id shard_id eth_hash)a
 
   @chain_type_optional_attrs (case @chain_type do
                                 :optimism ->
@@ -499,6 +499,7 @@ defmodule Explorer.Chain.Transaction do
               gas_price: wei_per_gas | nil,
               gas_used: Gas.t() | nil,
               hash: Hash.t(),
+              eth_hash: Hash.t(),
               index: transaction_index | nil,
               input: Data.t(),
               internal_transactions: %Ecto.Association.NotLoaded{} | [InternalTransaction.t()],
@@ -623,6 +624,7 @@ defmodule Explorer.Chain.Transaction do
     field(:has_token_transfers, :boolean, virtual: true)
     field(:shard_id, :integer)
     field(:to_shard_id, :integer)
+    field(:eth_hash, Hash.Full)
 
      | `status` | `contract_creation_address_hash` | `input`    | Token Transfer? | `internal_transactions_indexed_at`        | `internal_transactions` | Description                                                                                         |
      |----------|----------------------------------|------------|-----------------|-------------------------------------------|-------------------------|-----------------------------------------------------------------------------------------------------|

@@ -463,6 +463,7 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
 
     result = %{
       "hash" => transaction.hash,
+      "eth_hash" => transaction.eth_hash,
       "result" => status,
       "status" => transaction.status,
       "block_number" => transaction.block_number,

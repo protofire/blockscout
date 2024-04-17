@@ -74,7 +74,12 @@ defmodule BlockScoutWeb.API.V2.SearchView do
   end
 
   def prepare_search_result(%{type: "transaction"} = search_result) do
-    tx_hash = hash_to_string(search_result.tx_hash)
+    tx_hash =
+      if Map.has_key?(search_result, 'tx_hash') do
+        hash_to_string(search_result.tx_hash)
+      else
+        hash_to_string(search_result.tx_eth_hash)
+      end
 
     %{
       "type" => search_result.type,

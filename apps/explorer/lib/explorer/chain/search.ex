@@ -392,7 +392,7 @@ defmodule Explorer.Chain.Search do
         |> Map.put(:timestamp, dynamic([transaction], transaction.block_timestamp))
 
       from(transaction in Transaction,
-        where: transaction.hash == ^term,
+        where: transaction.hash == ^term or transaction.eth_hash == ^term,
         select: ^transaction_search_fields
       )
     else
@@ -409,7 +409,7 @@ defmodule Explorer.Chain.Search do
       from(transaction in Transaction,
         left_join: block in Block,
         on: transaction.block_hash == block.hash,
-        where: transaction.hash == ^term,
+        where: transaction.hash == ^term or transaction.eth_hash == ^term,
         select: ^transaction_search_fields
       )
     end

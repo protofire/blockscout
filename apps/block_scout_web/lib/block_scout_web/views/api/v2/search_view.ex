@@ -119,6 +119,7 @@ defmodule BlockScoutWeb.API.V2.SearchView do
     %{
       "type" => search_result.type,
       "transaction_hash" => transaction_hash,
+      "tx_eth_hash" => tx_eth_hash,
       "url" => transaction_path(Endpoint, :show, transaction_hash),
       "timestamp" => search_result.timestamp,
       "priority" => search_result.priority

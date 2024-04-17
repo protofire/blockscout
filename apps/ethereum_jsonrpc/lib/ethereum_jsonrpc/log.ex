@@ -5,6 +5,7 @@ defmodule EthereumJSONRPC.Log do
   """
 
   import EthereumJSONRPC, only: [quantity_to_integer: 1]
+  import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32: 1]
 
   @type elixir :: %{String.t() => String.t() | [String.t()] | non_neg_integer()}
 
@@ -163,8 +164,16 @@ defmodule EthereumJSONRPC.Log do
   end
 
   defp entry_to_elixir({key, _} = entry)
-       when key in ~w(address blockHash data removed topics transactionHash timestamp),
+       when key in ~w(blockHash data removed topics transactionHash timestamp),
        do: entry
+
+  defp entry_to_elixir({key, val}) when key in ~w(address) do
+    if String.starts_with?(val, "one") do
+      {key, decode_bech_32(val)}
+    else
+      {key, val}
+    end
+  end
 
   defp entry_to_elixir({key, quantity}) when key in ~w(blockNumber logIndex transactionIndex transactionLogIndex) do
     if is_nil(quantity) do

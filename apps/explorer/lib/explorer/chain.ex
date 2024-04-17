@@ -1397,7 +1397,7 @@ defmodule Explorer.Chain do
     necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
 
     Transaction
-    |> where(hash: ^hash)
+    |> where([b], b.hash == ^hash or b.eth_hash == ^hash)
     |> join_associations(necessity_by_association)
     |> select_repo(options).one()
     |> case do

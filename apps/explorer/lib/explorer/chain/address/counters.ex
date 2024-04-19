@@ -14,6 +14,7 @@ defmodule Explorer.Chain.Address.Counters do
     AddressesWithBalanceCounter,
     AddressTokenTransfersCounter,
     AddressTransactionsCounter,
+    AddressStakingTransactionsCounter,
     AddressTransactionsGasUsageCounter
   }
 
@@ -26,7 +27,8 @@ defmodule Explorer.Chain.Address.Counters do
     Log,
     TokenTransfer,
     Transaction,
-    Withdrawal
+    Withdrawal,
+    StakingTransaction
   }
 
   alias Explorer.Chain.Cache.AddressesTabsCounters
@@ -37,11 +39,24 @@ defmodule Explorer.Chain.Address.Counters do
   @typep counter :: non_neg_integer() | nil
 
   @counters_limit 51
-  @types [:validations, :txs, :token_transfers, :token_balances, :logs, :withdrawals, :internal_txs]
+  @types [
+    :validations,
+    :txs,
+    :token_transfers,
+    :token_balances,
+    :logs,
+    :withdrawals,
+    :internal_txs,
+    :staking_txs
+  ]
   @txs_types [:txs_from, :txs_to, :txs_contract]
 
   defp address_hash_to_logs_query(address_hash) do
     from(l in Log, where: l.address_hash == ^address_hash)
+  end
+
+  defp address_hash_to_staking_transactions_query(address_hash) do
+    from(st in StakingTransaction, where: st.from_address_hash == ^address_hash)
   end
 
   defp address_hash_to_validated_blocks_query(address_hash) do
@@ -144,6 +159,25 @@ defmodule Explorer.Chain.Address.Counters do
   @spec address_to_transaction_count(Address.t()) :: non_neg_integer()
   def address_to_transaction_count(address) do
     address_hash_to_transaction_count(address.hash)
+  end
+
+  def address_hash_to_staking_transactions_count_query(address_hash) do
+    from(
+      st in StakingTransaction,
+      where: st.from_address_hash == ^address_hash
+    )
+  end
+
+  @spec address_hash_to_staking_transactions_count(Hash.Address.t()) :: non_neg_integer()
+  def address_hash_to_staking_transactions_count(address_hash) do
+    query = address_hash_to_staking_transactions_count_query(address_hash)
+
+    Repo.aggregate(query, :count, :hash, timeout: :infinity)
+  end
+
+  @spec address_to_staking_transactions_count(Address.t()) :: non_neg_integer()
+  def address_to_staking_transactions_count(address) do
+    address_hash_to_staking_transactions_count(address.hash)
   end
 
   @doc """
@@ -289,6 +323,10 @@ defmodule Explorer.Chain.Address.Counters do
     end)
 
     Task.start_link(fn ->
+      staking_transaction_count(address)
+    end)
+
+    Task.start_link(fn ->
       token_transfers_count(address)
     end)
 
@@ -319,6 +357,10 @@ defmodule Explorer.Chain.Address.Counters do
     AddressTransactionsCounter.fetch(address)
   end
 
+  def staking_transaction_count(address) do
+    AddressStakingTransactionsCounter.fetch(address)
+  end
+
   def token_transfers_count(address) do
     AddressTokenTransfersCounter.fetch(address)
   end
@@ -328,7 +370,7 @@ defmodule Explorer.Chain.Address.Counters do
   end
 
   @spec address_limited_counters(Hash.t(), Keyword.t()) ::
-          {counter(), counter(), counter(), counter(), counter(), counter(), counter()}
+          {counter(), counter(), counter(), counter(), counter(), counter(), counter(), counter()}
   def address_limited_counters(address_hash, options) do
     cached_counters =
       Enum.reduce(@types, %{}, fn type, acc ->
@@ -464,6 +506,15 @@ defmodule Explorer.Chain.Address.Counters do
         options
       )
 
+    staking_txs_count_task =
+      configure_task(
+        :staking_txs,
+        cached_counters,
+        address_hash_to_staking_transactions_query(address_hash),
+        address_hash,
+        options
+      )
+
     map =
       [
         validations_count_task,
@@ -474,7 +525,8 @@ defmodule Explorer.Chain.Address.Counters do
         token_balances_count_task,
         logs_count_task,
         withdrawals_count_task,
-        internal_txs_count_task
+        internal_txs_count_task,
+        staking_txs_count_task
       ]
       |> Enum.reject(&is_nil/1)
       |> Task.yield_many(:timer.seconds(1))
@@ -513,7 +565,7 @@ defmodule Explorer.Chain.Address.Counters do
       |> process_txs_counter()
 
     {map[:validations], map[:txs], map[:token_transfers], map[:token_balances], map[:logs], map[:withdrawals],
-     map[:internal_txs]}
+     map[:internal_txs], map[:staking_txs]}
   end
 
   defp run_or_ignore({ok, _counter}, _type, _address_hash, _fun) when ok in [:up_to_date, :limit_value], do: nil

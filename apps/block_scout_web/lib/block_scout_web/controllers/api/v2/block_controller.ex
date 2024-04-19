@@ -4,6 +4,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
   import BlockScoutWeb.Chain,
     only: [
       next_page_params: 3,
+      next_page_params: 4,
       paging_options: 1,
       put_key_value_to_paging_options: 3,
       split_list_by_page: 1,
@@ -13,7 +14,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
   import BlockScoutWeb.PagingHelper, only: [delete_parameters_from_next_page_params: 1, select_block_type: 1]
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens: 1]
 
-  alias BlockScoutWeb.API.V2.{TransactionView, WithdrawalView}
+  alias BlockScoutWeb.API.V2.{TransactionView, WithdrawalView, StakingTransactionView}
   alias Explorer.Chain
 
   @transaction_necessity_by_association [
@@ -25,6 +26,13 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       [created_contract_address: :smart_contract] => :optional,
       [from_address: :smart_contract] => :optional,
       [to_address: :smart_contract] => :optional
+    }
+  ]
+
+  @staking_transaction_necessity_by_association [
+    necessity_by_association: %{
+      :block => :optional,
+      [from_address: :names] => :optional
     }
   ]
 
@@ -105,6 +113,36 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       |> put_status(200)
       |> put_view(TransactionView)
       |> render(:transactions, %{transactions: transactions |> maybe_preload_ens(), next_page_params: next_page_params})
+    end
+  end
+
+  def staking_transactions(conn, %{"block_hash_or_number" => block_hash_or_number} = params) do
+    with {:ok, type, value} <- parse_block_hash_or_number_param(block_hash_or_number),
+         {:ok, block} <- fetch_block(type, value, @api_true) do
+      full_options =
+        @staking_transaction_necessity_by_association
+        |> Keyword.merge(put_key_value_to_paging_options(paging_options(params), :is_index_in_asc_order, true))
+        |> Keyword.merge(@api_true)
+
+      transactions_plus_one = Chain.block_to_staking_transactions(block.hash, full_options)
+
+      {transactions, next_page} = split_list_by_page(transactions_plus_one)
+
+      next_page_params =
+        next_page
+        |> next_page_params(
+          transactions,
+          delete_parameters_from_next_page_params(params),
+          &StakingTransaction.next_page_params/1
+        )
+
+      conn
+      |> put_status(200)
+      |> put_view(StakingTransactionView)
+      |> render(:staking_transactions, %{
+        transactions: transactions |> maybe_preload_ens(),
+        next_page_params: next_page_params
+      })
     end
   end
 

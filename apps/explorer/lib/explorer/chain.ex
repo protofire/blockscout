@@ -26,6 +26,7 @@ defmodule Explorer.Chain do
     ]
 
   import EthereumJSONRPC, only: [integer_to_quantity: 1, fetch_block_internal_transactions: 2]
+  import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32: 1]
 
   require Logger
 
@@ -1409,6 +1410,28 @@ defmodule Explorer.Chain do
     end
   end
 
+  @spec hash_to_staking_transaction(Hash.Full.t(), [necessity_by_association_option | api?]) ::
+          {:ok, StakingTransaction.t()} | {:error, :not_found}
+  def hash_to_staking_transaction(
+        %Hash{byte_count: unquote(Hash.Full.byte_count())} = hash,
+        options \\ []
+      )
+      when is_list(options) do
+    necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
+
+    StakingTransaction
+    |> where(hash: ^hash)
+    |> join_associations(necessity_by_association)
+    |> select_repo(options).one()
+    |> case do
+      nil ->
+        {:error, :not_found}
+
+      transaction ->
+        {:ok, transaction}
+    end
+  end
+
   # preload_to_detect_tt?: we don't need to preload more than one token transfer in case the tx inside the list (we don't show any token transfers on tx tile in new UI)
   def preload_token_transfers(
         %Transaction{hash: tx_hash, block_hash: block_hash} = transaction,
@@ -2706,7 +2729,12 @@ defmodule Explorer.Chain do
   """
   @spec string_to_address_hash(String.t()) :: {:ok, Hash.Address.t()} | :error
   def string_to_address_hash(string) when is_binary(string) do
-    Hash.Address.cast(string)
+    if String.starts_with?(string, "one") do
+      string = decode_bech_32(string)
+      Hash.Address.cast(string)
+    else
+      Hash.Address.cast(string)
+    end
   end
 
   def string_to_address_hash(_), do: :error

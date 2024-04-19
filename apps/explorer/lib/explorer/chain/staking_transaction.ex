@@ -140,7 +140,7 @@ defmodule Explorer.Chain.StakingTransaction do
   def block_hash_to_staking_transactions_query(block_hash) do
     block_hash
     |> block_hash_to_staking_transactions_unordered_query()
-    |> order_by(desc: :index)
+    |> order_by(desc: :timestamp)
   end
 
   @spec block_hash_to_staking_transactions_unordered_query(Hash.Full.t()) :: Ecto.Query.t()
@@ -155,7 +155,7 @@ defmodule Explorer.Chain.StakingTransaction do
   def address_hash_to_staking_transactions_query(address_hash) do
     address_hash
     |> address_hash_to_staking_transactions_unordered_query()
-    |> order_by(desc: :index)
+    |> order_by(desc: :timestamp)
   end
 
   @spec address_hash_to_staking_transactions_unordered_query(Hash.Address.t()) :: Ecto.Query.t()
@@ -169,7 +169,21 @@ defmodule Explorer.Chain.StakingTransaction do
   @spec page_staking_transactions(Ecto.Query.t(), PagingOptions.t()) :: Ecto.Query.t()
   def page_staking_transactions(query, %PagingOptions{key: nil}), do: query
 
-  def page_staking_transactions(query, %PagingOptions{key: {index}}) do
-    where(query, [staking_transaction], staking_transaction.index < ^index)
+  def page_staking_transactions(query, %PagingOptions{key: {timestamp}}) do
+    where(query, [staking_transaction], staking_transaction.timestamp < ^timestamp)
+  end
+
+  @doc """
+  Returns next page params based on the provided transaction.
+  """
+  @spec next_page_params(Explorer.Chain.StakingTransaction.t()) :: %{
+          required(String.t()) => Decimal.t() | Wei.t() | non_neg_integer | DateTime.t() | Hash.t()
+        }
+  def next_page_params(%__MODULE__{block_number: block_number, timestamp: timestamp, hash: hash}) do
+    %{
+      "block_number" => block_number,
+      "timestamp" => timestamp,
+      "hash" => hash
+    }
   end
 end

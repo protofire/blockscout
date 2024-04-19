@@ -4,6 +4,7 @@ defmodule BlockScoutWeb.Router do
   alias BlockScoutWeb.Plug.GraphQL
   alias BlockScoutWeb.{ApiRouter, WebRouter}
 
+
   if Application.compile_env(:block_scout_web, :admin_panel_enabled) do
     forward("/admin", BlockScoutWeb.AdminRouter)
   end
@@ -15,6 +16,7 @@ defmodule BlockScoutWeb.Router do
     plug(:fetch_flash)
     plug(:protect_from_forgery)
     plug(BlockScoutWeb.CSPHeader)
+    plug(BlockScoutWeb.Plug.CheckAddressAPI)
   end
 
   pipeline :api do

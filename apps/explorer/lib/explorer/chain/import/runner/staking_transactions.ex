@@ -64,7 +64,7 @@ defmodule Explorer.Chain.Import.Runner.StakingTransactions do
           required(:timestamps) => Import.timestamps()
         }) :: {:ok, [StakingTransaction.t()]} | {:error, [Changeset.t()]}
   defp insert(repo, changes_list, %{timeout: timeout, timestamps: timestamps} = options) when is_list(changes_list) do
-    on_conflict = Map.get(options, :on_conflict, default_on_conflict)
+    on_conflict = Map.get_lazy(options, :on_conflict, &default_on_conflict/0)
 
     # Enforce Transaction ShareLocks order (see docs: sharelocks.md)
     ordered_changes_list = Enum.sort_by(changes_list, & &1.hash)
@@ -86,15 +86,70 @@ defmodule Explorer.Chain.Import.Runner.StakingTransactions do
       staking_transaction in StakingTransaction,
       update: [
         set: [
+          block_hash: fragment("EXCLUDED.block_hash"),
+          block_number: fragment("EXCLUDED.block_number"),
+          transaction_index: fragment("EXCLUDED.transaction_index"),
+          from_address_hash: fragment("EXCLUDED.from_address_hash"),
+          gas: fragment("EXCLUDED.gas"),
+          gas_price: fragment("EXCLUDED.gas_price"),
+          r: fragment("EXCLUDED.r"),
+          s: fragment("EXCLUDED.s"),
+          v: fragment("EXCLUDED.v"),
+          type: fragment("EXCLUDED.type"),
           nonce: fragment("EXCLUDED.nonce"),
           timestamp: fragment("EXCLUDED.timestamp"),
+          msg_validator_address: fragment("EXCLUDED.msg_validator_address"),
+          msg_name: fragment("EXCLUDED.msg_name"),
+          msg_commission_rate: fragment("EXCLUDED.msg_commission_rate"),
+          msg_max_commission_rate: fragment("EXCLUDED.msg_max_commission_rate"),
+          msg_max_change_rate: fragment("EXCLUDED.msg_max_change_rate"),
+          msg_min_self_delegation: fragment("EXCLUDED.msg_min_self_delegation"),
+          msg_max_total_delegation: fragment("EXCLUDED.msg_max_total_delegation"),
+          msg_amount: fragment("EXCLUDED.msg_amount"),
+          msg_website: fragment("EXCLUDED.msg_website"),
+          msg_identity: fragment("EXCLUDED.msg_identity"),
+          msg_security_contact: fragment("EXCLUDED.msg_security_contact"),
+          msg_details: fragment("EXCLUDED.msg_details"),
+          msg_slot_pub_keys: fragment("EXCLUDED.msg_slot_pub_keys"),
+          msg_delegator_address: fragment("EXCLUDED.msg_delegator_address"),
+          msg_slot_pub_key_to_add: fragment("EXCLUDED.msg_slot_pub_key_to_add"),
+          msg_slot_pub_key_to_remove: fragment("EXCLUDED.msg_slot_pub_key_to_remove"),
           inserted_at: fragment("LEAST(?, EXCLUDED.inserted_at)", staking_transaction.inserted_at),
           updated_at: fragment("GREATEST(?, EXCLUDED.updated_at)", staking_transaction.updated_at)
         ]
       ],
       where:
-        fragment("EXCLUDED.nonce <> ?", staking_transaction.nonce) or
-          fragment("EXCLUDED.timestamp <> ?", staking_transaction.timestamp)
+        fragment(
+          "(EXCLUDED.block_hash, EXCLUDED.block_number, EXCLUDED.transaction_index, EXCLUDED.from_address_hash, EXCLUDED.gas, EXCLUDED.gas_price, EXCLUDED.r, EXCLUDED.s, EXCLUDED.v, EXCLUDED.type, EXCLUDED.nonce, EXCLUDED.timestamp, EXCLUDED.msg_validator_address, EXCLUDED.msg_name, EXCLUDED.msg_commission_rate, EXCLUDED.msg_max_commission_rate, EXCLUDED.msg_max_change_rate, EXCLUDED.msg_min_self_delegation, EXCLUDED.msg_max_total_delegation, EXCLUDED.msg_amount, EXCLUDED.msg_website, EXCLUDED.msg_identity, EXCLUDED.msg_security_contact, EXCLUDED.msg_details, EXCLUDED.msg_slot_pub_keys, EXCLUDED.msg_delegator_address, EXCLUDED.msg_slot_pub_key_to_add, EXCLUDED.msg_slot_pub_key_to_remove) IS DISTINCT FROM (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          staking_transaction.block_hash,
+          staking_transaction.block_number,
+          staking_transaction.transaction_index,
+          staking_transaction.from_address_hash,
+          staking_transaction.gas,
+          staking_transaction.gas_price,
+          staking_transaction.r,
+          staking_transaction.s,
+          staking_transaction.v,
+          staking_transaction.type,
+          staking_transaction.nonce,
+          staking_transaction.timestamp,
+          staking_transaction.msg_validator_address,
+          staking_transaction.msg_name,
+          staking_transaction.msg_commission_rate,
+          staking_transaction.msg_max_commission_rate,
+          staking_transaction.msg_max_change_rate,
+          staking_transaction.msg_min_self_delegation,
+          staking_transaction.msg_max_total_delegation,
+          staking_transaction.msg_amount,
+          staking_transaction.msg_website,
+          staking_transaction.msg_identity,
+          staking_transaction.msg_security_contact,
+          staking_transaction.msg_details,
+          staking_transaction.msg_slot_pub_keys,
+          staking_transaction.msg_delegator_address,
+          staking_transaction.msg_slot_pub_key_to_add,
+          staking_transaction.msg_slot_pub_key_to_remove
+        )
     )
   end
 end

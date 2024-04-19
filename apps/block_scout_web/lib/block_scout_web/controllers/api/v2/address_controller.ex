@@ -23,9 +23,9 @@ defmodule BlockScoutWeb.API.V2.AddressController do
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens: 1, maybe_preload_ens_to_address: 1]
 
   alias BlockScoutWeb.AccessHelper
-  alias BlockScoutWeb.API.V2.{BlockView, TransactionView, WithdrawalView}
+  alias BlockScoutWeb.API.V2.{BlockView, TransactionView, WithdrawalView, StakingTransactionView}
   alias Explorer.{Chain, Market}
-  alias Explorer.Chain.{Address, Hash, Transaction}
+  alias Explorer.Chain.{Address, Hash, Transaction, StakingTransaction}
   alias Explorer.Chain.Address.Counters
   alias Explorer.Chain.Token.Instance
   alias Indexer.Fetcher.{CoinBalanceOnDemand, TokenBalanceOnDemand}
@@ -39,6 +39,15 @@ defmodule BlockScoutWeb.API.V2.AddressController do
       [created_contract_address: :smart_contract] => :optional,
       [from_address: :smart_contract] => :optional,
       [to_address: :smart_contract] => :optional
+    },
+    api?: true
+  ]
+
+  @staking_transaction_necessity_by_association [
+    necessity_by_association: %{
+      [from_address: :names] => :optional,
+      :block => :optional,
+      [from_address: :smart_contract] => :optional
     },
     api?: true
   ]
@@ -75,7 +84,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   @api_true [api?: true]
 
-  action_fallback(BlockScoutWeb.API.V2.FallbackController)
+  # action_fallback(BlockScoutWeb.API.V2.FallbackController)
 
   def address(conn, %{"address_hash_param" => address_hash_string} = params) do
     with {:ok, _address_hash, address} <- validate_address(address_hash_string, params, @address_options),
@@ -91,9 +100,11 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   def counters(conn, %{"address_hash_param" => address_hash_string} = params) do
     with {:ok, _address_hash, address} <- validate_address(address_hash_string, params) do
+      IO.inspect(address)
       {validation_count} = Counters.address_counters(address, @api_true)
 
       transactions_from_db = address.transactions_count || 0
+      staking_transactions_from_db = address.staking_transactions_count || 0
       token_transfers_from_db = address.token_transfers_count || 0
       address_gas_usage_from_db = address.gas_used || 0
 
@@ -101,7 +112,8 @@ defmodule BlockScoutWeb.API.V2.AddressController do
         transactions_count: to_string(transactions_from_db),
         token_transfers_count: to_string(token_transfers_from_db),
         gas_usage_count: to_string(address_gas_usage_from_db),
-        validations_count: to_string(validation_count)
+        validations_count: to_string(validation_count),
+        staking_transactions_count: to_string(staking_transactions_from_db)
       })
     end
   end
@@ -145,6 +157,35 @@ defmodule BlockScoutWeb.API.V2.AddressController do
       |> put_status(200)
       |> put_view(TransactionView)
       |> render(:transactions, %{transactions: transactions |> maybe_preload_ens(), next_page_params: next_page_params})
+    end
+  end
+
+  def staking_transactions(conn, %{"address_hash_param" => address_hash_string} = params) do
+    with {:ok, address_hash, _address} <- validate_address(address_hash_string, params) do
+      options =
+        @staking_transaction_necessity_by_association
+        |> Keyword.merge(paging_options(params))
+        |> Keyword.merge(current_filter(params))
+        |> Keyword.merge(address_transactions_sorting(params))
+
+      results_plus_one = Chain.address_to_staking_transactions(address_hash, options)
+      {transactions, next_page} = split_list_by_page(results_plus_one)
+
+      next_page_params =
+        next_page
+        |> next_page_params(
+          transactions,
+          delete_parameters_from_next_page_params(params),
+          &StakingTransaction.next_page_params/1
+        )
+
+      conn
+      |> put_status(200)
+      |> put_view(StakingTransactionView)
+      |> render(:staking_transactions, %{
+        transactions: transactions |> maybe_preload_ens(),
+        next_page_params: next_page_params
+      })
     end
   end
 
@@ -424,7 +465,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   def tabs_counters(conn, %{"address_hash_param" => address_hash_string} = params) do
     with {:ok, address_hash, _address} <- validate_address(address_hash_string, params) do
-      {validations, transactions, token_transfers, token_balances, logs, withdrawals, internal_txs} =
+      {validations, transactions, token_transfers, token_balances, logs, withdrawals, internal_txs, staking_txs} =
         Counters.address_limited_counters(address_hash, @api_true)
 
       conn
@@ -432,6 +473,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
       |> json(%{
         validations_count: validations,
         transactions_count: transactions,
+        staking_transactions_count: staking_txs,
         token_transfers_count: token_transfers,
         token_balances_count: token_balances,
         logs_count: logs,

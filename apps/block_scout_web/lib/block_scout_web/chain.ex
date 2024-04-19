@@ -313,6 +313,17 @@ defmodule BlockScoutWeb.Chain do
     end
   end
 
+  def paging_options(%{"block_number" => block_number_string, "timestamp" => timestamp_string})
+      when is_binary(block_number_string) and is_binary(timestamp_string) do
+    with {block_number, ""} <- Integer.parse(block_number_string),
+         {timestamp, ""} <- Integer.parse(timestamp_string) do
+      [paging_options: %{@default_paging_options | key: {block_number, timestamp}}]
+    else
+      _ ->
+        [paging_options: @default_paging_options]
+    end
+  end
+
   def paging_options(%{"block_number" => block_number_string}) when is_binary(block_number_string) do
     case Integer.parse(block_number_string) do
       {block_number, ""} ->
@@ -327,6 +338,16 @@ defmodule BlockScoutWeb.Chain do
     case Integer.parse(index_string) do
       {index, ""} ->
         [paging_options: %{@default_paging_options | key: {index}}]
+
+      _ ->
+        [paging_options: @default_paging_options]
+    end
+  end
+
+  def paging_options(%{"index" => timestamp_string}) when is_binary(timestamp_string) do
+    case Integer.parse(timestamp_string) do
+      {timestamp, ""} ->
+        [paging_options: %{@default_paging_options | key: {timestamp}}]
 
       _ ->
         [paging_options: @default_paging_options]

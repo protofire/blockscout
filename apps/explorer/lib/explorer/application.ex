@@ -138,6 +138,7 @@ defmodule Explorer.Application do
         configure(Explorer.Chain.Cache.Counters.Optimism.LastOutputRootSizeCount),
         configure(Explorer.Chain.Cache.Counters.NewPendingTransactionsCount),
         configure(Explorer.Chain.Cache.Counters.Transactions24hCount),
+        configure(Explorer.Counters.AddressStakingTransactionsCounter),
         configure(Explorer.Validator.MetadataProcessor),
         configure(Explorer.Tags.AddressTag.Cataloger),
         configure(Explorer.SmartContract.CertifiedSmartContractCataloger),

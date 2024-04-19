@@ -386,6 +386,9 @@ config :explorer, Explorer.Market.MarketHistoryCache,
 config :explorer, Explorer.Chain.Cache.Counters.AddressTransactionsCount,
   cache_period: ConfigHelper.parse_time_env_var("CACHE_ADDRESS_TRANSACTIONS_COUNTER_PERIOD", "1h")
 
+config :explorer, Explorer.Counters.AddressStakingTransactionsCounter,
+  cache_period: ConfigHelper.parse_time_env_var("CACHE_ADDRESS_STAKING_TRANSACTIONS_COUNTER_PERIOD", "1h")
+
 config :explorer, Explorer.Chain.Cache.Counters.AddressTokensUsdSum,
   cache_period: ConfigHelper.parse_time_env_var("CACHE_ADDRESS_TOKENS_USD_SUM_PERIOD", "1h")
 

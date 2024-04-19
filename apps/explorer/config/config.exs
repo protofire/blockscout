@@ -96,6 +96,10 @@ config :explorer, Explorer.Chain.Cache.Counters.AddressTransactionsCount,
   enabled: true,
   enable_consolidation: true
 
+config :explorer, Explorer.Counters.AddressStakingTransactionsCounter,
+  enabled: true,
+  enable_consolidation: true
+
 config :explorer, Explorer.Chain.Cache.Counters.AddressTokenTransfersCount,
   enabled: true,
   enable_consolidation: true

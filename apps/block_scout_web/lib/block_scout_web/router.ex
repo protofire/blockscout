@@ -31,6 +31,7 @@ defmodule BlockScoutWeb.Router do
     plug(:fetch_flash)
     plug(:protect_from_forgery)
     plug(BlockScoutWeb.CSPHeader)
+    plug(BlockScoutWeb.Plug.CheckAddressAPI)
   end
 
   pipeline :api do

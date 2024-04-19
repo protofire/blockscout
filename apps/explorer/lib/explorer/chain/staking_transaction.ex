@@ -179,7 +179,7 @@ defmodule Explorer.Chain.StakingTransaction do
   @spec next_page_params(Explorer.Chain.StakingTransaction.t()) :: %{
           required(String.t()) => Decimal.t() | Wei.t() | non_neg_integer | DateTime.t() | Hash.t()
         }
-  def next_page_params(%__MODULE__{block_number: block_number, timestamp: timestamp, hash: hash} = tx) do
+  def next_page_params(%__MODULE__{block_number: block_number, timestamp: timestamp, hash: hash}) do
     %{
       "block_number" => block_number,
       "timestamp" => timestamp,

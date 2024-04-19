@@ -2,10 +2,6 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionView do
   use BlockScoutWeb, :view
 
   alias BlockScoutWeb.API.V2.{ApiView, Helper}
-  # alias Ecto.Association.NotLoaded
-  # alias Explorer.{Chain, Market}
-  # alias Explorer.Chain.{Address, Block, Hash, StakingTransaction, Wei}
-  # alias Timex.Duration
 
   def render("staking_transaction.json", %{transaction: transaction, conn: conn}) do
     prepare_transaction(transaction)

@@ -11,7 +11,15 @@ defmodule Explorer.Chain.Cache.AddressesTabsCounters do
 
   @cache_name :addresses_tabs_counters
 
-  @typep counter_type :: :validations | :txs | :token_transfers | :token_balances | :logs | :withdrawals | :internal_txs | :staking_txs
+  @typep counter_type ::
+           :validations
+           | :txs
+           | :token_transfers
+           | :token_balances
+           | :logs
+           | :withdrawals
+           | :internal_txs
+           | :staking_txs
   @typep response_status :: :limit_value | :stale | :up_to_date
 
   @spec get_counter(counter_type, String.t()) :: {DateTime.t(), non_neg_integer(), response_status} | nil

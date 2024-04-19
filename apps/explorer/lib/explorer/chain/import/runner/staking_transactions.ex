@@ -114,13 +114,16 @@ defmodule Explorer.Chain.Import.Runner.StakingTransactions do
           msg_delegator_address: fragment("EXCLUDED.msg_delegator_address"),
           msg_slot_pub_key_to_add: fragment("EXCLUDED.msg_slot_pub_key_to_add"),
           msg_slot_pub_key_to_remove: fragment("EXCLUDED.msg_slot_pub_key_to_remove"),
+          gas_used: fragment("EXCLUDED.gas_used"),
+          cumulative_gas_used: fragment("EXCLUDED.cumulative_gas_used"),
+          status: fragment("EXCLUDED.status"),
           inserted_at: fragment("LEAST(?, EXCLUDED.inserted_at)", staking_transaction.inserted_at),
           updated_at: fragment("GREATEST(?, EXCLUDED.updated_at)", staking_transaction.updated_at)
         ]
       ],
       where:
         fragment(
-          "(EXCLUDED.block_hash, EXCLUDED.block_number, EXCLUDED.transaction_index, EXCLUDED.from_address_hash, EXCLUDED.gas, EXCLUDED.gas_price, EXCLUDED.r, EXCLUDED.s, EXCLUDED.v, EXCLUDED.type, EXCLUDED.nonce, EXCLUDED.timestamp, EXCLUDED.msg_validator_address, EXCLUDED.msg_name, EXCLUDED.msg_commission_rate, EXCLUDED.msg_max_commission_rate, EXCLUDED.msg_max_change_rate, EXCLUDED.msg_min_self_delegation, EXCLUDED.msg_max_total_delegation, EXCLUDED.msg_amount, EXCLUDED.msg_website, EXCLUDED.msg_identity, EXCLUDED.msg_security_contact, EXCLUDED.msg_details, EXCLUDED.msg_slot_pub_keys, EXCLUDED.msg_delegator_address, EXCLUDED.msg_slot_pub_key_to_add, EXCLUDED.msg_slot_pub_key_to_remove) IS DISTINCT FROM (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          "(EXCLUDED.block_hash, EXCLUDED.block_number, EXCLUDED.transaction_index, EXCLUDED.from_address_hash, EXCLUDED.gas, EXCLUDED.gas_price, EXCLUDED.r, EXCLUDED.s, EXCLUDED.v, EXCLUDED.type, EXCLUDED.nonce, EXCLUDED.timestamp, EXCLUDED.msg_validator_address, EXCLUDED.msg_name, EXCLUDED.msg_commission_rate, EXCLUDED.msg_max_commission_rate, EXCLUDED.msg_max_change_rate, EXCLUDED.msg_min_self_delegation, EXCLUDED.msg_max_total_delegation, EXCLUDED.msg_amount, EXCLUDED.msg_website, EXCLUDED.msg_identity, EXCLUDED.msg_security_contact, EXCLUDED.msg_details, EXCLUDED.msg_slot_pub_keys, EXCLUDED.msg_delegator_address, EXCLUDED.msg_slot_pub_key_to_add, EXCLUDED.msg_slot_pub_key_to_remove, EXCLUDED.gas_used, EXCLUDED.cumulative_gas_used, EXCLUDED.status) IS DISTINCT FROM (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
           staking_transaction.block_hash,
           staking_transaction.block_number,
           staking_transaction.transaction_index,
@@ -148,7 +151,10 @@ defmodule Explorer.Chain.Import.Runner.StakingTransactions do
           staking_transaction.msg_slot_pub_keys,
           staking_transaction.msg_delegator_address,
           staking_transaction.msg_slot_pub_key_to_add,
-          staking_transaction.msg_slot_pub_key_to_remove
+          staking_transaction.msg_slot_pub_key_to_remove,
+          staking_transaction.gas_used,
+          staking_transaction.cumulative_gas_used,
+          staking_transaction.status
         )
     )
   end

@@ -135,7 +135,7 @@ defmodule Indexer.Block.Fetcher do
            %Blocks{
              blocks_params: blocks_params,
              transactions_params: transactions_params_without_receipts,
-             staking_transactions_params: staking_transactions_params,
+             staking_transactions_params: staking_transactions_params_without_receipts,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
              errors: blocks_errors
@@ -144,6 +144,11 @@ defmodule Indexer.Block.Fetcher do
          {:receipts, {:ok, receipt_params}} <- {:receipts, Receipts.fetch(state, transactions_params_without_receipts)},
          %{logs: logs, receipts: receipts} = receipt_params,
          transactions_with_receipts = Receipts.put(transactions_params_without_receipts, receipts),
+         {:receipts, {:ok, staking_receipt_params}} <-
+           {:receipts, Receipts.fetch(state, staking_transactions_params_without_receipts)},
+         %{receipts: staking_receipts} = staking_receipt_params,
+         staking_transactions_with_receipts =
+           Receipts.put(staking_transactions_params_without_receipts, staking_receipts),
          %{token_transfers: token_transfers, tokens: tokens} = TokenTransfers.parse(logs),
          %{transaction_actions: transaction_actions} = TransactionActions.parse(logs),
          %{mint_transfers: mint_transfers} = MintTransfers.parse(logs),
@@ -172,7 +177,7 @@ defmodule Indexer.Block.Fetcher do
              transactions: transactions_with_receipts,
              transaction_actions: transaction_actions,
              withdrawals: withdrawals_params,
-             staking_transactions: staking_transactions_params
+             staking_transactions: staking_transactions_with_receipts
            }),
          coin_balances_params_set =
            %{
@@ -203,7 +208,7 @@ defmodule Indexer.Block.Fetcher do
            token_transfers: %{params: token_transfers},
            tokens: %{params: tokens},
            transactions: %{params: transactions_with_receipts},
-           staking_transactions: %{params: staking_transactions_params},
+           staking_transactions: %{params: staking_transactions_with_receipts},
            withdrawals: %{params: withdrawals_params},
            token_instances: %{params: token_instances}
          },

@@ -14,13 +14,15 @@ defmodule Explorer.Chain.StakingTransaction do
     Wei
   }
 
+  alias Explorer.Chain.Transaction.{Status}
+
   alias Explorer.Chain.StakingTransaction.{
     Type
   }
 
   @required_attrs ~w(hash nonce timestamp gas_price gas v r s type)a
 
-  @optional_attrs ~w(block_hash block_number transaction_index from_address_hash msg_validator_address msg_name msg_commission_rate msg_max_commission_rate msg_max_change_rate msg_min_self_delegation msg_max_total_delegation msg_amount msg_website msg_identity msg_security_contact msg_details msg_slot_pub_keys msg_delegator_address msg_slot_pub_key_to_add msg_slot_pub_key_to_remove)a
+  @optional_attrs ~w(block_hash block_number gas_used cumulative_gas_used status transaction_index from_address_hash msg_validator_address msg_name msg_commission_rate msg_max_commission_rate msg_max_change_rate msg_min_self_delegation msg_max_total_delegation msg_amount msg_website msg_identity msg_security_contact msg_details msg_slot_pub_keys msg_delegator_address msg_slot_pub_key_to_add msg_slot_pub_key_to_remove)a
 
   @type transaction_index :: non_neg_integer()
 
@@ -70,6 +72,9 @@ defmodule Explorer.Chain.StakingTransaction do
           value: Wei.t() | nil,
           gas: Decimal.t(),
           gas_price: Wei.t(),
+          cumulative_gas_used: Gas.t() | nil,
+          gas_used: Gas.t() | nil,
+          status: Status.t() | nil,
           v: Decimal.t(),
           r: Decimal.t(),
           s: Decimal.t(),
@@ -101,6 +106,9 @@ defmodule Explorer.Chain.StakingTransaction do
     field(:value, Wei)
     field(:gas_price, Wei)
     field(:gas, :decimal)
+    field(:cumulative_gas_used, :decimal)
+    field(:gas_used, :decimal)
+    field(:status, Status)
     field(:v, :decimal)
     field(:r, :decimal)
     field(:s, :decimal)

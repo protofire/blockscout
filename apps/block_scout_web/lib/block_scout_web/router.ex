@@ -4,7 +4,6 @@ defmodule BlockScoutWeb.Router do
   alias BlockScoutWeb.Plug.GraphQL
   alias BlockScoutWeb.{ApiRouter, WebRouter}
 
-
   if Application.compile_env(:block_scout_web, :admin_panel_enabled) do
     forward("/admin", BlockScoutWeb.AdminRouter)
   end

@@ -159,7 +159,7 @@ defmodule Indexer.Block.Fetcher do
            %Blocks{
              blocks_params: blocks_params,
              transactions_params: transactions_params_without_receipts,
-             staking_transactions_params: staking_transactions_params,
+             staking_transactions_params: staking_transactions_params_without_receipts,
              withdrawals_params: withdrawals_params,
              block_second_degree_relations_params: block_second_degree_relations_params,
              errors: blocks_errors
@@ -170,6 +170,11 @@ defmodule Indexer.Block.Fetcher do
          transactions_with_receipts = Receipts.put(transactions_params_without_receipts, receipts),
          celo_epoch_logs = CeloEpochLogs.fetch(blocks, json_rpc_named_arguments),
          logs = maybe_set_new_log_index(receipt_logs) ++ celo_epoch_logs,
+         {:receipts, {:ok, staking_receipt_params}} <-
+           {:receipts, Receipts.fetch(state, staking_transactions_params_without_receipts)},
+         %{receipts: staking_receipts} = staking_receipt_params,
+         staking_transactions_with_receipts =
+           Receipts.put(staking_transactions_params_without_receipts, staking_receipts),
          %{token_transfers: token_transfers, tokens: tokens} = TokenTransfers.parse(logs),
          %{token_transfers: celo_native_token_transfers, tokens: celo_tokens} =
            CeloTransactionTokenTransfers.parse_transactions(transactions_with_receipts),
@@ -220,7 +225,8 @@ defmodule Indexer.Block.Fetcher do
              transaction_actions: transaction_actions,
              withdrawals: withdrawals_params,
              polygon_zkevm_bridge_operations: polygon_zkevm_bridge_operations,
-             staking_transactions: staking_transactions_params
+             staking_transactions: staking_transactions_params,
+             staking_transactions: staking_transactions_with_receipts
            }),
          coin_balances_params_set =
            %{
@@ -254,7 +260,7 @@ defmodule Indexer.Block.Fetcher do
            token_transfers: %{params: token_transfers},
            tokens: %{params: tokens},
            transactions: %{params: transactions_with_receipts},
-           staking_transactions: %{params: staking_transactions_params},
+           staking_transactions: %{params: staking_transactions_with_receipts},
            withdrawals: %{params: withdrawals_params},
            token_instances: %{params: token_instances},
            signed_authorizations: %{params: SignedAuthorizations.parse(transactions_with_receipts)}

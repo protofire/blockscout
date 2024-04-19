@@ -1,4 +1,4 @@
-defmodule Explorer.Repo.Migrations.CreateStakingTransactions do
+defmodule Explorer.Repo.Migrations.AddStakingTransactionCountToAddress do
   use Ecto.Migration
 
   def change do

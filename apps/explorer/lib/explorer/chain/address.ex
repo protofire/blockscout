@@ -27,7 +27,7 @@ defmodule Explorer.Chain.Address do
 
   alias Explorer.Chain.Cache.{Accounts, NetVersion}
 
-  @optional_attrs ~w(contract_code fetched_coin_balance fetched_coin_balance_block_number nonce decompiled verified gas_used transactions_count token_transfers_count)a
+  @optional_attrs ~w(contract_code fetched_coin_balance fetched_coin_balance_block_number nonce decompiled verified gas_used transactions_count staking_transactions_count token_transfers_count)a
   @required_attrs ~w(hash)a
   @allowed_attrs @optional_attrs ++ @required_attrs
 
@@ -63,6 +63,7 @@ defmodule Explorer.Chain.Address do
           updated_at: DateTime.t(),
           nonce: non_neg_integer() | nil,
           transactions_count: non_neg_integer() | nil,
+          staking_transactions_count: non_neg_integer() | nil,
           token_transfers_count: non_neg_integer() | nil,
           gas_used: non_neg_integer() | nil,
           ens_domain_name: String.t() | nil
@@ -101,6 +102,7 @@ defmodule Explorer.Chain.Address do
     field(:has_decompiled_code?, :boolean, virtual: true)
     field(:stale?, :boolean, virtual: true)
     field(:transactions_count, :integer)
+    field(:staking_transactions_count, :integer)
     field(:token_transfers_count, :integer)
     field(:gas_used, :integer)
     field(:ens_domain_name, :string, virtual: true)

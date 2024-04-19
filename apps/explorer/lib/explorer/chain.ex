@@ -26,6 +26,7 @@ defmodule Explorer.Chain do
     ]
 
   import EthereumJSONRPC, only: [integer_to_quantity: 1, fetch_block_internal_transactions: 2]
+  import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32: 1]
 
   require Logger
 
@@ -2728,7 +2729,12 @@ defmodule Explorer.Chain do
   """
   @spec string_to_address_hash(String.t()) :: {:ok, Hash.Address.t()} | :error
   def string_to_address_hash(string) when is_binary(string) do
-    Hash.Address.cast(string)
+    if String.starts_with?(string, "one") do
+      string = decode_bech_32(string)
+      Hash.Address.cast(string)
+    else
+      Hash.Address.cast(string)
+    end
   end
 
   def string_to_address_hash(_), do: :error

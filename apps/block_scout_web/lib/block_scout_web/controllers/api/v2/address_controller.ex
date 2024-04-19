@@ -84,7 +84,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   @api_true [api?: true]
 
-  action_fallback(BlockScoutWeb.API.V2.FallbackController)
+  # action_fallback(BlockScoutWeb.API.V2.FallbackController)
 
   def address(conn, %{"address_hash_param" => address_hash_string} = params) do
     with {:ok, _address_hash, address} <- validate_address(address_hash_string, params, @address_options),
@@ -100,9 +100,11 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   def counters(conn, %{"address_hash_param" => address_hash_string} = params) do
     with {:ok, _address_hash, address} <- validate_address(address_hash_string, params) do
+      IO.inspect(address)
       {validation_count} = Counters.address_counters(address, @api_true)
 
       transactions_from_db = address.transactions_count || 0
+      staking_transactions_from_db = address.staking_transactions_count || 0
       token_transfers_from_db = address.token_transfers_count || 0
       address_gas_usage_from_db = address.gas_used || 0
 
@@ -110,7 +112,8 @@ defmodule BlockScoutWeb.API.V2.AddressController do
         transactions_count: to_string(transactions_from_db),
         token_transfers_count: to_string(token_transfers_from_db),
         gas_usage_count: to_string(address_gas_usage_from_db),
-        validations_count: to_string(validation_count)
+        validations_count: to_string(validation_count),
+        staking_transactions_count: to_string(staking_transactions_from_db)
       })
     end
   end

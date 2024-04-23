@@ -3,6 +3,20 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionController do
 
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens_to_transaction: 1]
 
+  import BlockScoutWeb.Chain,
+    only: [
+      next_page_params: 3,
+      paging_options: 1,
+      split_list_by_page: 1
+    ]
+
+  import BlockScoutWeb.PagingHelper,
+    only: [
+      delete_parameters_from_next_page_params: 1,
+    ]
+
+  import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens: 1, maybe_preload_ens_to_transaction: 1]
+
   alias BlockScoutWeb.AccessHelper
   alias Explorer.{Chain}
   alias Explorer.Chain.{StakingTransaction}
@@ -28,6 +42,39 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionController do
       conn
       |> put_status(200)
       |> render(:staking_transaction, %{transaction: transaction |> maybe_preload_ens_to_transaction()})
+    end
+  end
+
+  @spec staking_logs(Plug.Conn.t(), map()) :: Plug.Conn.t() | {atom(), any()}
+  def staking_logs(conn, %{"staking_transactions_hash_param" => staking_transaction_hash_string} = params) do
+    IO.inspect('pass')
+
+    with {:ok, _transaction, transaction_hash} <- validate_transaction(staking_transaction_hash_string, params) do
+      full_options =
+        [
+          necessity_by_association: %{
+            [address: :names] => :optional,
+            [address: :smart_contract] => :optional,
+            address: :optional
+          }
+        ]
+        |> Keyword.merge(paging_options(params))
+        |> Keyword.merge(@api_true)
+
+      logs_plus_one = Chain.staking_transaction_to_logs(transaction_hash, full_options)
+
+      {logs, next_page} = split_list_by_page(logs_plus_one)
+
+      next_page_params =
+        next_page
+        |> next_page_params(logs, delete_parameters_from_next_page_params(params))
+      conn
+      |> put_status(200)
+      |> render(:logs, %{
+        tx_hash: transaction_hash,
+        logs: logs |> maybe_preload_ens(),
+        next_page_params: next_page_params
+      })
     end
   end
 

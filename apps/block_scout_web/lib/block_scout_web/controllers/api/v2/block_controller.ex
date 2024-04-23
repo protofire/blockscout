@@ -35,6 +35,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
   alias Explorer.Chain.Arbitrum.Reader.API.Settlement, as: ArbitrumSettlementReader
   alias Explorer.Chain.Cache.{BlockNumber, Counters.AverageBlockTime}
   alias Explorer.Chain.InternalTransaction
+  alias Explorer.Chain.StakingTransaction
   alias Explorer.Chain.Optimism.TransactionBatch, as: OptimismTransactionBatch
   alias Explorer.Chain.Scroll.Reader, as: ScrollReader
   alias Timex.Duration

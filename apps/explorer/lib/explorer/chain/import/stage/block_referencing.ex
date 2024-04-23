@@ -16,7 +16,8 @@ defmodule Explorer.Chain.Import.Stage.BlockReferencing do
     Runner.Address.TokenBalances,
     Runner.TransactionActions,
     Runner.Withdrawals,
-    Runner.StakingTransactions
+    Runner.StakingTransactions,
+    Runner.StakingLogs,
   ]
 
   @polygon_edge_runners [

@@ -172,7 +172,7 @@ defmodule Indexer.Block.Fetcher do
          logs = maybe_set_new_log_index(receipt_logs) ++ celo_epoch_logs,
          {:receipts, {:ok, staking_receipt_params}} <-
            {:receipts, Receipts.fetch(state, staking_transactions_params_without_receipts)},
-         %{receipts: staking_receipts} = staking_receipt_params,
+         %{logs: staking_logs, receipts: staking_receipts} = staking_receipt_params,
          staking_transactions_with_receipts =
            Receipts.put(staking_transactions_params_without_receipts, staking_receipts),
          %{token_transfers: token_transfers, tokens: tokens} = TokenTransfers.parse(logs),
@@ -217,7 +217,7 @@ defmodule Indexer.Block.Fetcher do
            Addresses.extract_addresses(%{
              block_reward_contract_beneficiaries: MapSet.to_list(beneficiary_params_set),
              blocks: blocks,
-             logs: logs,
+             logs: logs ++ staking_logs,
              mint_transfers: mint_transfers,
              shibarium_bridge_operations: shibarium_bridge_operations,
              token_transfers: token_transfers,
@@ -260,10 +260,11 @@ defmodule Indexer.Block.Fetcher do
            token_transfers: %{params: token_transfers},
            tokens: %{params: tokens},
            transactions: %{params: transactions_with_receipts},
-           staking_transactions: %{params: staking_transactions_with_receipts},
            withdrawals: %{params: withdrawals_params},
            token_instances: %{params: token_instances},
-           signed_authorizations: %{params: SignedAuthorizations.parse(transactions_with_receipts)}
+           signed_authorizations: %{params: SignedAuthorizations.parse(transactions_with_receipts)},
+           staking_transactions: %{params: staking_transactions_with_receipts},
+           staking_logs: %{params: staking_logs},
          },
          chain_type_import_options =
            %{

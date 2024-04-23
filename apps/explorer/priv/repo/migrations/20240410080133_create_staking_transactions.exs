@@ -11,7 +11,7 @@ defmodule Explorer.Repo.Migrations.CreateStakingTransactions do
       add(:block_number, :integer, null: true)
       # `null` when a pending transaction
       add(:transaction_index, :integer, null: true)
-      add(:timestamp, :integer, null: false)
+      add(:timestamp, :utc_datetime_usec, null: false)
       add(:from_address_hash, references(:addresses, column: :hash, on_delete: :delete_all, type: :bytea), null: false)
       add(:value, :numeric, precision: 100, null: true)
       add(:gas_price, :numeric, precision: 100, null: false)

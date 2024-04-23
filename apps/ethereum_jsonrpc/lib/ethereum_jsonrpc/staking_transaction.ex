@@ -7,13 +7,14 @@ defmodule EthereumJSONRPC.StakingTransaction do
   and [`hmy_getBlockByNumber] (https://docs.harmony.one/home/developers/api/methods/transaction-related-methods/hmy_getblockbynumber)
   """
 
-  import EthereumJSONRPC, only: [quantity_to_integer: 1]
+  import EthereumJSONRPC, only: [quantity_to_integer: 1, timestamp_to_datetime: 1]
   import EthereumJSONRPC.Utility.Bech, only: [decode_bech_32_if_exist: 2, decode_bech_32: 1]
 
   alias EthereumJSONRPC
 
   @type elixir :: %{
-          String.t() => EthereumJSONRPC.address() | EthereumJSONRPC.hash() | String.t() | non_neg_integer() | nil
+          String.t() =>
+            EthereumJSONRPC.address() | EthereumJSONRPC.hash() | String.t() | non_neg_integer() | DateTime.t() | nil
         }
 
   @type t :: %{
@@ -27,7 +28,7 @@ defmodule EthereumJSONRPC.StakingTransaction do
           block_hash: EthereumJSONRPC.hash(),
           block_number: non_neg_integer(),
           transaction_index: non_neg_integer(),
-          timestamp: non_neg_integer(),
+          timestamp: DateTime.t(),
           from_address_hash: EthereumJSONRPC.address(),
           value: non_neg_integer(),
           gas_price: non_neg_integer(),
@@ -166,9 +167,15 @@ defmodule EthereumJSONRPC.StakingTransaction do
   end
 
   defp entry_to_elixir({key, quantity})
-       when key in ~w(gas gasPrice nonce r s v timestamp) and
+       when key in ~w(gas gasPrice nonce r s v) and
               quantity != nil do
     {key, quantity_to_integer(quantity)}
+  end
+
+  defp entry_to_elixir({key, timestamp})
+       when key in ~w(timestamp) and
+              timestamp != nil do
+    {key, timestamp_to_datetime(timestamp)}
   end
 
   # as always ganache has it's own vision on JSON RPC standard

@@ -11,10 +11,12 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       parse_block_hash_or_number_param: 1
     ]
 
+
   import BlockScoutWeb.PagingHelper, only: [delete_parameters_from_next_page_params: 1, select_block_type: 1]
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens: 1]
 
   alias BlockScoutWeb.API.V2.{TransactionView, WithdrawalView, StakingTransactionView}
+  alias Explorer.Chain.StakingTransaction
   alias Explorer.Chain
 
   @transaction_necessity_by_association [

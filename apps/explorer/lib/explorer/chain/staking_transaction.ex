@@ -66,7 +66,7 @@ defmodule Explorer.Chain.StakingTransaction do
           block_hash: Hash.t() | nil,
           block_number: Block.block_number() | nil,
           transaction_index: transaction_index | nil,
-          timestamp: non_neg_integer(),
+          timestamp: DateTime.t(),
           from_address: %Ecto.Association.NotLoaded{} | Address.t(),
           from_address_hash: Hash.Address.t(),
           value: Wei.t() | nil,
@@ -102,7 +102,7 @@ defmodule Explorer.Chain.StakingTransaction do
     field(:nonce, :integer)
     field(:block_number, :integer)
     field(:transaction_index, :integer)
-    field(:timestamp, :integer)
+    field(:timestamp, :utc_datetime_usec)
     field(:value, Wei)
     field(:gas_price, Wei)
     field(:gas, :decimal)

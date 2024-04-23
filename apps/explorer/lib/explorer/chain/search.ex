@@ -25,6 +25,7 @@ defmodule Explorer.Chain.Search do
     SmartContract,
     Token,
     Transaction,
+    StakingTransaction,
     UserOperation
   }
 
@@ -100,17 +101,20 @@ defmodule Explorer.Chain.Search do
 
       valid_full_hash?(string) ->
         tx_query = search_tx_query(string)
+        staking_tx_query = search_staking_tx_query(string)
 
         if UserOperation.user_operations_enabled?() do
           user_operation_query = search_user_operation_query(string)
 
           basic_query
           |> union(^tx_query)
+          |> union(^staking_tx_query)
           |> union(^user_operation_query)
           |> union(^block_query)
         else
           basic_query
           |> union(^tx_query)
+          |> union(^staking_tx_query)
           |> union(^block_query)
         end
 
@@ -414,6 +418,41 @@ defmodule Explorer.Chain.Search do
       )
     end
   end
+
+  defp search_staking_tx_query(term) do
+    if DenormalizationHelper.denormalization_finished?() do
+      transaction_search_fields =
+        search_fields()
+        |> Map.put(:tx_hash, dynamic([transaction], transaction.hash))
+        |> Map.put(:block_hash, dynamic([transaction], transaction.block_hash))
+        |> Map.put(:type, "staking_transaction")
+        |> Map.put(:block_number, dynamic([transaction], transaction.block_number))
+        |> Map.put(:inserted_at, dynamic([transaction], transaction.inserted_at))
+        |> Map.put(:timestamp, dynamic([transaction], transaction.timestamp))
+
+      from(transaction in StakingTransaction,
+        where: transaction.hash == ^term,
+        select: ^transaction_search_fields
+      )
+    else
+      transaction_search_fields =
+        search_fields()
+        |> Map.put(:tx_hash, dynamic([transaction, _], transaction.hash))
+        |> Map.put(:block_hash, dynamic([transaction, _], transaction.block_hash))
+        |> Map.put(:type, "staking_transaction")
+        |> Map.put(:block_number, dynamic([transaction, _], transaction.block_number))
+        |> Map.put(:inserted_at, dynamic([transaction, _], transaction.inserted_at))
+        |> Map.put(:timestamp, dynamic([_, block], block.timestamp))
+
+      from(transaction in StakingTransaction,
+        left_join: block in Block,
+        on: transaction.block_hash == block.hash,
+        where: transaction.hash == ^term,
+        select: ^transaction_search_fields
+      )
+    end
+  end
+
 
   defp search_user_operation_query(term) do
     user_operation_search_fields =

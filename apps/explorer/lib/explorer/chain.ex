@@ -65,7 +65,8 @@ defmodule Explorer.Chain do
     Transaction,
     Wei,
     Withdrawal,
-    StakingTransaction
+    StakingTransaction,
+    StakingLog
   }
 
   alias Explorer.Chain.Cache.{
@@ -2868,6 +2869,31 @@ defmodule Explorer.Chain do
     log_with_transactions =
       from(log in Log,
         inner_join: transaction in Transaction,
+        on:
+          transaction.block_hash == log.block_hash and transaction.block_number == log.block_number and
+            transaction.hash == log.transaction_hash
+      )
+
+    query =
+      log_with_transactions
+      |> where([_, transaction], transaction.hash == ^transaction_hash)
+      |> page_transaction_logs(paging_options)
+      |> limit(^paging_options.page_size)
+      |> order_by([log], asc: log.index)
+      |> join_associations(necessity_by_association)
+
+    query
+    |> select_repo(options).all()
+  end
+
+  @spec staking_transaction_to_logs(Hash.Full.t(), [paging_options | necessity_by_association_option | api?]) :: [StakingLog.t()]
+  def staking_transaction_to_logs(transaction_hash, options \\ []) when is_list(options) do
+    necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
+    paging_options = Keyword.get(options, :paging_options, @default_paging_options)
+
+    log_with_transactions =
+      from(log in StakingLog,
+        inner_join: transaction in StakingTransaction,
         on:
           transaction.block_hash == log.block_hash and transaction.block_number == log.block_number and
             transaction.hash == log.transaction_hash

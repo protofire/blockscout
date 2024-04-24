@@ -86,6 +86,17 @@ defmodule BlockScoutWeb.API.V2.SearchView do
     }
   end
 
+  def prepare_search_result(%{type: "staking_transaction"} = search_result) do
+    tx_hash = hash_to_string(search_result.tx_hash)
+
+    %{
+      "type" => search_result.type,
+      "tx_hash" => tx_hash,
+      "url" => "",
+      "timestamp" => search_result.timestamp
+    }
+  end
+
   def prepare_search_result(%{type: "user_operation"} = search_result) do
     user_operation_hash = hash_to_string(search_result.user_operation_hash)
 

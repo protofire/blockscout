@@ -250,6 +250,7 @@ defmodule BlockScoutWeb.ApiRouter do
 
     scope "/staking-transactions" do
       get("/:staking_transactions_hash_param", V2.StakingTransactionController, :staking_transaction)
+      get("/:staking_transactions_hash_param/logs", V2.StakingTransactionController, :staking_logs)
     end
 
     scope "/tokens" do

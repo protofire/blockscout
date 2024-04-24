@@ -20,7 +20,7 @@ defmodule Explorer.Counters.Helper do
   def fetch_from_cache(key, cache_name, default \\ 0) do
     case :ets.lookup(cache_name, key) do
       [{_, value}] ->
-        Logger.debug("Cache hit for #{key}")
+        Logger.debug("Cache hit for #{inspect(key)}")
         value
 
       [] ->

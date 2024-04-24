@@ -14,5 +14,3 @@ services:
       POSTGRES_PASSWORD: "blockscout"
     ports:
       - "5432:5432"
-    # volumes:
-    #   - ./psql-volume:/var/lib/psql

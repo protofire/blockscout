@@ -184,6 +184,15 @@ defmodule Explorer.Chain.Search do
             []
           end
 
+        staking_tx_result =
+          if valid_full_hash?(search_query) do
+            search_query
+            |> search_staking_tx_query()
+            |> select_repo(options).all()
+          else
+            []
+          end
+
         op_result =
           if valid_full_hash?(search_query) && UserOperation.user_operations_enabled?() do
             search_query
@@ -218,6 +227,7 @@ defmodule Explorer.Chain.Search do
             contracts_result,
             labels_result,
             tx_result,
+            staking_tx_result,
             op_result,
             address_result,
             blocks_result,
@@ -452,7 +462,6 @@ defmodule Explorer.Chain.Search do
       )
     end
   end
-
 
   defp search_user_operation_query(term) do
     user_operation_search_fields =

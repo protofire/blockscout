@@ -707,7 +707,6 @@ defmodule Explorer.Chain.Search do
     end
   end
 
-
   defp search_user_operation_query(term) do
     user_operation_search_fields =
       search_fields()

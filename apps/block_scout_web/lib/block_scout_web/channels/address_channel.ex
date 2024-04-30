@@ -102,6 +102,9 @@ defmodule BlockScoutWeb.AddressChannel do
         %{result: result},
         %Phoenix.Socket{handler: BlockScoutWeb.UserSocketV2} = socket
       ) do
+    require Logger
+    Logger.info("verification_result #{inspect(result)}")
+
     case result do
       {:ok, _contract} ->
         push(socket, "verification_result", %{status: "success"})
@@ -118,6 +121,9 @@ defmodule BlockScoutWeb.AddressChannel do
   end
 
   def handle_out("verification_result", result, socket) do
+    require Logger
+    Logger.info("verification_result #{inspect(result)}")
+
     case result[:result] do
       {:ok, _contract} ->
         push(socket, "verification", %{verification_result: :ok})

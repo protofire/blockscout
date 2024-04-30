@@ -85,6 +85,9 @@ defmodule BlockScoutWeb.AddressChannel do
   end
 
   def handle_out("verification_result", result, socket) do
+    require Logger
+    Logger.info("verification_result #{inspect(result)}")
+
     case result[:result] do
       {:ok, _contract} ->
         push(socket, "verification", %{verification_result: :ok})

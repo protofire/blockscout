@@ -106,7 +106,6 @@ defmodule BlockScoutWeb.Notifier do
 
   def handle_event({:chain_event, :blocks, :realtime, blocks}) do
     last_broadcasted_block_number = Helper.fetch_from_cache(:number, :last_broadcasted_block)
-    Logger.debug("Last broadcasted block number: #{last_broadcasted_block_number}")
 
     blocks
     |> Enum.sort_by(& &1.number, :asc)

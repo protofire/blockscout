@@ -84,7 +84,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   @api_true [api?: true]
 
-  # action_fallback(BlockScoutWeb.API.V2.FallbackController)
+  action_fallback(BlockScoutWeb.API.V2.FallbackController)
 
   def address(conn, %{"address_hash_param" => address_hash_string} = params) do
     with {:ok, _address_hash, address} <- validate_address(address_hash_string, params, @address_options),
@@ -100,7 +100,6 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   def counters(conn, %{"address_hash_param" => address_hash_string} = params) do
     with {:ok, _address_hash, address} <- validate_address(address_hash_string, params) do
-      IO.inspect(address)
       {validation_count} = Counters.address_counters(address, @api_true)
 
       transactions_from_db = address.transactions_count || 0

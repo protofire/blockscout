@@ -12,7 +12,7 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionController do
 
   import BlockScoutWeb.PagingHelper,
     only: [
-      delete_parameters_from_next_page_params: 1,
+      delete_parameters_from_next_page_params: 1
     ]
 
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens: 1, maybe_preload_ens_to_transaction: 1]
@@ -47,8 +47,6 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionController do
 
   @spec staking_logs(Plug.Conn.t(), map()) :: Plug.Conn.t() | {atom(), any()}
   def staking_logs(conn, %{"staking_transactions_hash_param" => staking_transaction_hash_string} = params) do
-    IO.inspect('pass')
-
     with {:ok, _transaction, transaction_hash} <- validate_transaction(staking_transaction_hash_string, params) do
       full_options =
         [
@@ -68,6 +66,7 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionController do
       next_page_params =
         next_page
         |> next_page_params(logs, delete_parameters_from_next_page_params(params))
+
       conn
       |> put_status(200)
       |> render(:logs, %{

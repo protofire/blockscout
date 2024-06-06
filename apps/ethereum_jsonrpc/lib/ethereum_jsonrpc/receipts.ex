@@ -208,7 +208,7 @@ defmodule EthereumJSONRPC.Receipts do
   defp request(id, transaction_hash) when is_integer(id) and is_binary(transaction_hash) do
     request(%{
       id: id,
-      method: "hmy_getTransactionReceipt",
+      method: "eth_getTransactionReceipt",
       params: [transaction_hash]
     })
   end

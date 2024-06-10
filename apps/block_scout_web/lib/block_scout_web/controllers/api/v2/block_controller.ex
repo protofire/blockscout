@@ -84,6 +84,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       full_options
       |> Keyword.merge(paging_options(params))
       |> Keyword.merge(@api_true)
+      |> Keyword.merge([with_transactions: true])
       |> Chain.list_blocks()
 
     {blocks, next_page} = split_list_by_page(blocks_plus_one)

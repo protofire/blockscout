@@ -1691,26 +1691,29 @@ defmodule Explorer.Chain do
   """
   @spec list_blocks([paging_options | necessity_by_association_option | api?]) :: [Block.t()]
   def list_blocks(options \\ []) when is_list(options) do
-    necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
+    necessity_by_association =
+      Keyword.get(options, :necessity_by_association)
+
     paging_options = Keyword.get(options, :paging_options) || @default_paging_options
     block_type = Keyword.get(options, :block_type, "Block")
+    with_transactions = Keyword.get(options, :with_transactions) || false
 
     cond do
       block_type == "Block" && !paging_options.key ->
-        block_from_cache(block_type, paging_options, necessity_by_association, options)
+        block_from_cache(block_type, paging_options, necessity_by_association, options, with_transactions)
 
       block_type == "Uncle" && !paging_options.key ->
         uncles_from_cache(block_type, paging_options, necessity_by_association, options)
 
       true ->
-        fetch_blocks(block_type, paging_options, necessity_by_association, options)
+        fetch_blocks(block_type, paging_options, necessity_by_association, options, with_transactions)
     end
   end
 
-  defp block_from_cache(block_type, paging_options, necessity_by_association, options) do
+  defp block_from_cache(block_type, paging_options, necessity_by_association, options, with_transactions) do
     case Blocks.take_enough(paging_options.page_size) do
       nil ->
-        elements = fetch_blocks(block_type, paging_options, necessity_by_association, options)
+        elements = fetch_blocks(block_type, paging_options, necessity_by_association, options, with_transactions)
 
         Blocks.update(elements)
 
@@ -1724,7 +1727,7 @@ defmodule Explorer.Chain do
   def uncles_from_cache(block_type, paging_options, necessity_by_association, options) do
     case Uncles.take_enough(paging_options.page_size) do
       nil ->
-        elements = fetch_blocks(block_type, paging_options, necessity_by_association, options)
+        elements = fetch_blocks(block_type, paging_options, necessity_by_association, options, false)
 
         Uncles.update(elements)
 
@@ -1735,15 +1738,25 @@ defmodule Explorer.Chain do
     end
   end
 
-  defp fetch_blocks(block_type, paging_options, necessity_by_association, options) do
+  defp fetch_blocks(block_type, paging_options, necessity_by_association, options, with_transactions) do
     Block
     |> Block.block_type_filter(block_type)
     |> page_blocks(paging_options)
     |> limit(^paging_options.page_size)
     |> order_by(desc: :number)
     |> join_associations(necessity_by_association)
+    |> with_transactions(with_transactions)
     |> select_repo(options).all()
   end
+
+  defp with_transactions(query, true) do
+    from(b in query,
+      inner_join: t in assoc(b, :transactions),
+      group_by: b.hash,
+      having: count(t.hash) > 0)
+  end
+
+  defp with_transactions(query, false), do: query
 
   @doc """
   Map `block_number`s to their `t:Explorer.Chain.Block.t/0` `hash` `t:Explorer.Chain.Hash.Full.t/0`.
@@ -2886,7 +2899,9 @@ defmodule Explorer.Chain do
     |> select_repo(options).all()
   end
 
-  @spec staking_transaction_to_logs(Hash.Full.t(), [paging_options | necessity_by_association_option | api?]) :: [StakingLog.t()]
+  @spec staking_transaction_to_logs(Hash.Full.t(), [paging_options | necessity_by_association_option | api?]) :: [
+          StakingLog.t()
+        ]
   def staking_transaction_to_logs(transaction_hash, options \\ []) when is_list(options) do
     necessity_by_association = Keyword.get(options, :necessity_by_association, %{})
     paging_options = Keyword.get(options, :paging_options, @default_paging_options)

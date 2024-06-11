@@ -46,7 +46,8 @@ config :explorer, Explorer.Repo,
   listener_url: System.get_env("DATABASE_EVENT_URL"),
   pool_size: pool_size,
   ssl: ExplorerConfigHelper.ssl_enabled?(),
-  queue_target: queue_target
+  queue_target: queue_target,
+  timeout: 180_000
 
 # Configures API the database
 config :explorer, Explorer.Repo.Replica1,

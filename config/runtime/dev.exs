@@ -50,7 +50,8 @@ config :explorer, Explorer.Repo,
   hostname: hostname,
   url: System.get_env("DATABASE_URL"),
   pool_size: pool_size,
-  queue_target: queue_target
+  queue_target: queue_target,
+  timeout: 180_000
 
 database_api = if System.get_env("DATABASE_READ_ONLY_API_URL"), do: nil, else: database
 hostname_api = if System.get_env("DATABASE_READ_ONLY_API_URL"), do: nil, else: hostname

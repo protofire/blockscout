@@ -131,7 +131,7 @@ defmodule Indexer.Fetcher.InternalTransaction do
           end,
           error_count: Enum.count(filtered_data)
         )
-
+        IO.inspect('FAIL:', filtered_unique_numbers)
         handle_not_found_transaction(reason)
 
         # re-queue the de-duped entries

@@ -123,7 +123,7 @@ defmodule Indexer.Fetcher.InternalTransaction do
           end,
           error_count: filtered_unique_numbers_count
         )
-        IO.inspect('FAIL:', filtered_unique_numbers)
+        IO.inspect(filtered_unique_numbers)
         handle_not_found_transaction(reason)
 
         # re-queue the de-duped entries

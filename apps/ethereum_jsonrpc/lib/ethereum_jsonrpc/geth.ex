@@ -26,7 +26,6 @@ defmodule EthereumJSONRPC.Geth do
   @impl EthereumJSONRPC.Variant
   def fetch_internal_transactions(transactions_params, json_rpc_named_arguments) when is_list(transactions_params) do
     id_to_params = id_to_params(transactions_params)
-
     json_rpc_named_arguments_corrected_timeout = correct_timeouts(json_rpc_named_arguments)
 
     with {:ok, responses} <-
@@ -149,11 +148,27 @@ defmodule EthereumJSONRPC.Geth do
     debug_trace_transaction_timeout =
       Application.get_env(:ethereum_jsonrpc, __MODULE__)[:debug_trace_transaction_timeout]
 
-    request(%{
+    request_params = %{
       id: id,
       method: "debug_traceTransaction",
       params: [hash_data, %{timeout: debug_trace_transaction_timeout} |> Map.merge(tracer_params())]
-    })
+    }
+
+    try do
+      request(request_params)
+    catch
+      kind, reason ->
+        IO.inspect(request_params)
+
+        # Optionally, re-raise the error if you want the caller to handle it
+        {:error, reason}
+    end
+
+    # request(%{
+    #   id: id,
+    #   method: "debug_traceTransaction",
+    #   params: [hash_data, %{timeout: debug_trace_transaction_timeout} |> Map.merge(tracer_params())]
+    # })
   end
 
   defp debug_trace_block_by_number_request({id, block_number}) do
@@ -197,7 +212,7 @@ defmodule EthereumJSONRPC.Geth do
     with {:ok, receipts} <-
            id_to_params
            |> Enum.map(fn {id, %{hash_data: hash_data}} ->
-             request(%{id: id, method: "eth_getTransactionReceipt", params: [hash_data]})
+             request(%{id: id, method: "hmy_getTransactionReceipt", params: [hash_data]})
            end)
            |> json_rpc(json_rpc_named_arguments),
          {:ok, txs} <-

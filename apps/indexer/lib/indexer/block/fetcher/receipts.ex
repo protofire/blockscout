@@ -59,9 +59,11 @@ defmodule Indexer.Block.Fetcher.Receipts do
         if is_nil(block_number) do
           transaction = find_transaction_by_hash(transaction_params, transaction_hash)
 
-          %{log_params | block_number: transaction[:block_number]}
+          %{log_params | block_number: transaction[:block_number], transaction_hash: transaction[:hash] }
         else
-          log_params
+          transaction = find_transaction_by_hash(transaction_params, transaction_hash)
+
+          %{log_params | transaction_hash: transaction[:hash] }
         end
       end)
 
@@ -70,7 +72,7 @@ defmodule Indexer.Block.Fetcher.Receipts do
 
   defp find_transaction_by_hash(transaction_params, transaction_hash) do
     Enum.find(transaction_params, fn transaction ->
-      transaction[:hash] == transaction_hash
+      transaction[:hash] == transaction_hash or transaction[:eth_hash] == transaction_hash
     end)
   end
 end

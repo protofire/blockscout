@@ -106,20 +106,20 @@ defmodule Indexer.Fetcher.InternalTransaction do
 
     filtered_unique_numbers_count = Enum.count(filtered_unique_numbers)
     Logger.metadata(count: filtered_unique_numbers_count)
-
-    Logger.debug("fetching internal transactions for blocks")
+    Logger.info("fetching internal transactions for blocks: : #{Enum.join(filtered_unique_numbers, ", ")}")
 
     json_rpc_named_arguments
     |> Keyword.fetch!(:variant)
     |> fetch_internal_transactions(filtered_unique_numbers, json_rpc_named_arguments)
     |> case do
       {:ok, internal_transactions_params} ->
+        Logger.info("fetching internal transactions done: #{Enum.join(filtered_unique_numbers, ", ")}")
         safe_import_internal_transaction(internal_transactions_params, filtered_unique_numbers)
 
       {:error, reason} ->
         Logger.error(
           fn ->
-            ["failed to fetch internal transactions for blocks: ", Exception.format(:error, reason)]
+            ["failed to fetch internal transactions for blocks: #{Enum.join(filtered_unique_numbers, ", ")}", Exception.format(:error, reason)]
           end,
           error_count: filtered_unique_numbers_count
         )
@@ -132,7 +132,7 @@ defmodule Indexer.Fetcher.InternalTransaction do
       {:error, reason, stacktrace} ->
         Logger.error(
           fn ->
-            ["failed to fetch internal transactions for blocks: ", Exception.format(:error, reason, stacktrace)]
+            ["failed to fetch internal transactions for blocks: #{Enum.join(filtered_unique_numbers, ", ")}", Exception.format(:error, reason, stacktrace)]
           end,
           error_count: filtered_unique_numbers_count
         )

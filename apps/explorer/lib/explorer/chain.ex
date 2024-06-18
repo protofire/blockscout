@@ -1641,6 +1641,43 @@ defmodule Explorer.Chain do
     |> Repo.stream_reduce(initial, reducer)
   end
 
+  @doc """
+  Returns a stream of all blocks with unfetched internal transactions, using
+  the `pending_block_operation` table.
+
+      iex> unfetched = insert(:block)
+      iex> insert(:pending_block_operation, block: unfetched, block_number: unfetched.number)
+      iex> {:ok, number_set} = Explorer.Chain.stream_blocks_with_unfetched_internal_transactions(
+      ...>   MapSet.new(),
+      ...>   fn number, acc ->
+      ...>     MapSet.put(acc, number)
+      ...>   end
+      ...> )
+      iex> unfetched.number in number_set
+      true
+
+  """
+  @spec stream_blocks_with_unfetched_internal_transactions(
+          initial :: accumulator,
+          reducer :: (entry :: term(), accumulator -> accumulator),
+          limited? :: boolean()
+        ) :: {:ok, accumulator}
+        when accumulator: term()
+  def stream_blocks_with_unfetched_internal_transactions(initial, reducer, limited? \\ false)
+      when is_function(reducer, 2) do
+    query =
+      from(
+        po in PendingBlockOperation,
+        where: not is_nil(po.block_number),
+        select: po.block_number,
+        order_by: [desc: po.block_number]
+      )
+
+    query
+    |> add_fetcher_limit(limited?)
+    |> Repo.stream_reduce(initial, reducer)
+  end
+
   def remove_nonconsensus_blocks_from_pending_ops(block_hashes) do
     query =
       case PendingOperationsHelper.pending_operations_type() do

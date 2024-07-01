@@ -99,7 +99,7 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
 
     with {:ok, transaction, _transaction_hash} <-
            validate_transaction(transaction_hash_string, params,
-             necessity_by_association: %{},
+             necessity_by_association: necessity_by_association,
              api?: true
            ),
          preloaded <-

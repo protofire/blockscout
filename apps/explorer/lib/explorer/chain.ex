@@ -1951,8 +1951,7 @@ defmodule Explorer.Chain do
       from(
         po in PendingBlockOperation,
         # temp test
-        where: not is_nil(po.block_number) and po.block_number > 55_000_000,
-        # where: not is_nil(po.block_number) and po.block_number < 13800000 or po.block_number > 28000000, # temp solution avoid spamming blocks
+        where: not is_nil(po.block_number) and po.block_number < 13800000 or po.block_number > 28000000, # temp solution avoid spamming blocks
         select: po.block_number,
         order_by: [desc: po.block_number]
       )

@@ -1691,8 +1691,7 @@ defmodule Explorer.Chain do
   """
   @spec list_blocks([paging_options | necessity_by_association_option | api?]) :: [Block.t()]
   def list_blocks(options \\ []) when is_list(options) do
-    necessity_by_association =
-      Keyword.get(options, :necessity_by_association) || %{}
+    necessity_by_association = Keyword.get(options, :necessity_by_association) || %{}
 
     paging_options = Keyword.get(options, :paging_options) || @default_paging_options
     block_type = Keyword.get(options, :block_type, "Block")
@@ -1750,10 +1749,10 @@ defmodule Explorer.Chain do
   end
 
   defp with_transactions(query, true) do
-    from(b in query,
-      inner_join: t in assoc(b, :transactions),
-      group_by: b.hash,
-      having: count(t.hash) > 0)
+    from(q in query,
+      as: :block,
+      where: exists(from(t in Transaction, where: t.block_hash == parent_as(:block).hash))
+    )
   end
 
   defp with_transactions(query, false), do: query
@@ -1951,7 +1950,8 @@ defmodule Explorer.Chain do
     query =
       from(
         po in PendingBlockOperation,
-        where: not is_nil(po.block_number) and po.block_number > 55000000, # temp test
+        # temp test
+        where: not is_nil(po.block_number) and po.block_number > 55_000_000,
         # where: not is_nil(po.block_number) and po.block_number < 13800000 or po.block_number > 28000000, # temp solution avoid spamming blocks
         select: po.block_number,
         order_by: [desc: po.block_number]

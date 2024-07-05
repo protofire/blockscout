@@ -31,10 +31,22 @@ defmodule Indexer.Fetcher.CoinBalanceDailyUpdater do
     {:noreply, Enum.reduce(daily_balances_params, state, &put_new_param/2)}
   end
 
+  # Clause to handle params without a :day key
+  defp put_new_param(%{day: nil} = param, acc) do
+    IO.inspect(param)
+    acc
+  end
+
   defp put_new_param(%{day: day, address_hash: address_hash, value: value} = param, acc) do
     Map.update(acc, {address_hash, day}, param, fn %{value: old_value} = old_param ->
       if is_nil(old_value) or value > old_value, do: param, else: old_param
     end)
+  end
+
+  # Default clause to catch all other cases
+  defp put_new_param(param, acc) do
+    IO.inspect(param, label: "Unhandled param structure")
+    acc
   end
 
   @impl true

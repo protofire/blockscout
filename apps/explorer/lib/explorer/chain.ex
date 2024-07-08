@@ -1744,18 +1744,18 @@ defmodule Explorer.Chain do
     |> limit(^paging_options.page_size)
     |> order_by(desc: :number)
     |> join_associations(necessity_by_association)
-    |> with_transactions(with_transactions)
+    # |> with_transactions(with_transactions)
     |> select_repo(options).all()
   end
 
-  defp with_transactions(query, true) do
-    from(q in query,
-      as: :block,
-      where: exists(from(t in Transaction, where: t.block_hash == parent_as(:block).hash))
-    )
-  end
+  # defp with_transactions(query, true) do
+  #   from(q in query,
+  #     as: :block,
+  #     where: exists(from(t in Transaction, where: t.block_hash == parent_as(:block).hash))
+  #   )
+  # end
 
-  defp with_transactions(query, false), do: query
+  # defp with_transactions(query, false), do: query
 
   @doc """
   Map `block_number`s to their `t:Explorer.Chain.Block.t/0` `hash` `t:Explorer.Chain.Hash.Full.t/0`.

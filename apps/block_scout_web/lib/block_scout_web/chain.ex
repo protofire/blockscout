@@ -56,6 +56,7 @@ defmodule BlockScoutWeb.Chain do
   @page_size 50
   @default_paging_options %PagingOptions{page_size: @page_size + 1}
   @address_hash_len 40
+  @address_bech32_hash_len 42
   @tx_block_op_hash_len 64
 
   def default_paging_options do
@@ -87,6 +88,9 @@ defmodule BlockScoutWeb.Chain do
   def from_param(param)
 
   def from_param("0x" <> number_string = param) when byte_size(number_string) == @address_hash_len,
+    do: address_from_param(param)
+
+  def from_param("one" <> number_string = param) when byte_size(param) == @address_bech32_hash_len,
     do: address_from_param(param)
 
   def from_param("0x" <> number_string = param) when byte_size(number_string) == @tx_block_op_hash_len,

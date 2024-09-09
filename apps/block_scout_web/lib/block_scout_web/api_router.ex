@@ -370,6 +370,8 @@ defmodule BlockScoutWeb.ApiRouter do
 
     get("/logs-csv", AddressTransactionController, :logs_csv)
 
+    get("/smart-contracts-csv", V2.SmartContractController, :smart_contracts_csv)
+
     scope "/health" do
       get("/", HealthController, :health)
       get("/liveness", HealthController, :liveness)

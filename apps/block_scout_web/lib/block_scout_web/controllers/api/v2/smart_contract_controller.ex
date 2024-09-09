@@ -17,6 +17,8 @@ defmodule BlockScoutWeb.API.V2.SmartContractController do
   alias Explorer.SmartContract.{Reader, Writer}
   alias Explorer.SmartContract.Solidity.PublishHelper
   alias Explorer.ThirdPartyIntegrations.SolidityScan
+  alias Explorer.Chain.CSVExport.SmartContractsCsvExporter
+  alias Plug.Conn
 
   @smart_contract_address_options [
     necessity_by_association: %{
@@ -294,6 +296,82 @@ defmodule BlockScoutWeb.API.V2.SmartContractController do
 
   def prepare_args(list) when is_list(list), do: list
   def prepare_args(other), do: [other]
+
+  def smart_contracts_csv(conn, params) do
+    items_csv(conn, params, SmartContractsCsvExporter)
+  end
+
+  defp items_csv(
+         conn,
+         %{
+           "from_period" => from_period,
+           "to_period" => to_period,
+         },
+         csv_export_module
+       ) do
+    with true <- Application.get_env(:block_scout_web, :recaptcha)[:is_disabled] do
+      csv_export_module.export(from_period, to_period)
+      |> Enum.reduce_while(put_resp_params(conn), fn chunk, conn ->
+        case Conn.chunk(conn, chunk) do
+          {:ok, conn} ->
+            {:cont, conn}
+
+          {:error, :closed} ->
+            {:halt, conn}
+        end
+      end)
+    else
+      :error ->
+        unprocessable_entity(conn)
+
+      false ->
+        not_found(conn)
+    end
+  end
+
+  defp items_csv(
+         conn,
+         %{
+           "from_period" => from_period,
+           "to_period" => to_period,
+           "recaptcha_response" => recaptcha_response
+         },
+         csv_export_module
+       ) do
+    with {:recaptcha, true} <- {:recaptcha, captcha_helper().recaptcha_passed?(recaptcha_response)} do
+      csv_export_module.export(from_period, to_period)
+      |> Enum.reduce_while(put_resp_params(conn), fn chunk, conn ->
+        case Conn.chunk(conn, chunk) do
+          {:ok, conn} ->
+            {:cont, conn}
+
+          {:error, :closed} ->
+            {:halt, conn}
+        end
+      end)
+    else
+      :error ->
+        unprocessable_entity(conn)
+
+      {:recaptcha, false} ->
+        not_found(conn)
+    end
+  end
+
+  defp captcha_helper do
+    :block_scout_web
+    |> Application.get_env(:captcha_helper)
+  end
+
+  defp items_csv(conn, _, _), do: not_found(conn)
+
+  defp put_resp_params(conn) do
+    conn
+    |> put_resp_content_type("application/csv")
+    |> put_resp_header("content-disposition", "attachment;")
+    |> put_resp_cookie("csv-downloaded", "true", max_age: 86_400, http_only: false)
+    |> send_chunked(200)
+  end
 
   defp validate_smart_contract(params, address_hash_string) do
     with {:format, {:ok, address_hash}} <- {:format, Chain.string_to_address_hash(address_hash_string)},

@@ -1297,12 +1297,14 @@ defmodule Explorer.Chain.SmartContract do
   def verified_contracts_by_date_range(from_period, to_period) do
     query = from(contract in __MODULE__)
     date_format = "%Y-%m-%d"
+    from_date = Timex.parse!(from_period, date_format, :strftime) |> Timex.beginning_of_day()
+    to_date = Timex.parse!(to_period, date_format, :strftime) |> Timex.end_of_day()
 
     query
     |> where(
       [contract],
-      contract.inserted_at >= ^Timex.parse!(from_period, date_format, :strftime) and
-        contract.inserted_at <= ^Timex.parse!(to_period, date_format, :strftime)
+      contract.inserted_at >= ^from_date and
+        contract.inserted_at <= ^to_date
     )
     |> order_by(desc: :id)
     |> Chain.select_repo([]).all()

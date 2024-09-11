@@ -304,36 +304,8 @@ defmodule BlockScoutWeb.API.V2.SmartContractController do
   defp items_csv(
          conn,
          %{
-           "from_period" => from_period,
-           "to_period" => to_period,
-         },
-         csv_export_module
-       ) do
-    with true <- Application.get_env(:block_scout_web, :recaptcha)[:is_disabled] do
-      csv_export_module.export(from_period, to_period)
-      |> Enum.reduce_while(put_resp_params(conn), fn chunk, conn ->
-        case Conn.chunk(conn, chunk) do
-          {:ok, conn} ->
-            {:cont, conn}
-
-          {:error, :closed} ->
-            {:halt, conn}
-        end
-      end)
-    else
-      :error ->
-        unprocessable_entity(conn)
-
-      false ->
-        not_found(conn)
-    end
-  end
-
-  defp items_csv(
-         conn,
-         %{
-           "from_period" => from_period,
-           "to_period" => to_period,
+          "from_period" => from_period,
+          "to_period" => to_period,
            "recaptcha_response" => recaptcha_response
          },
          csv_export_module
@@ -354,6 +326,7 @@ defmodule BlockScoutWeb.API.V2.SmartContractController do
         unprocessable_entity(conn)
 
       {:recaptcha, false} ->
+        IO.puts("Failed to export CSV due to invalid recaptcha response.")
         not_found(conn)
     end
   end

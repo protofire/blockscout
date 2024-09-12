@@ -159,6 +159,7 @@ defmodule Explorer.Chain.Block.Schema do
         field(:transactions_fees, :decimal, virtual: true)
         field(:burnt_fees, :decimal, virtual: true)
         field(:priority_fees, :decimal, virtual: true)
+        field(:epoch, :integer)
 
         timestamps()
 
@@ -208,7 +209,7 @@ defmodule Explorer.Chain.Block do
   alias Explorer.{Helper, Repo}
   alias Explorer.Utility.MissingRangesManipulator
 
-  @optional_attrs ~w(size refetch_needed total_difficulty difficulty base_fee_per_gas)a
+  @optional_attrs ~w(size refetch_needed total_difficulty difficulty base_fee_per_gas epoch)a
 
   @chain_type_optional_attrs (case @chain_type do
                                 :rsk ->

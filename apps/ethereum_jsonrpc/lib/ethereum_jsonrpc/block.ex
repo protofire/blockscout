@@ -72,6 +72,7 @@ defmodule EthereumJSONRPC.Block do
           extra_data: EthereumJSONRPC.hash(),
           gas_limit: non_neg_integer(),
           gas_used: non_neg_integer(),
+          epoch: non_neg_integer(),
           hash: EthereumJSONRPC.hash(),
           logs_bloom: EthereumJSONRPC.hash(),
           miner_hash: EthereumJSONRPC.hash(),
@@ -95,6 +96,7 @@ defmodule EthereumJSONRPC.Block do
    * `"difficulty"` - `t:EthereumJSONRPC.quantity/0` of the difficulty for this block.
    * `"extraData"` - the extra `t:EthereumJSONRPC.data/0` field of this block.
    * `"gasLimit" - maximum gas `t:EthereumJSONRPC.quantity/0` in this block.
+   * `"epoch"` - `t:EthereumJSONRPC.quantity/0` of the epoch for this block.
    * `"gasUsed" - the total `t:EthereumJSONRPC.quantity/0` of gas used by all transactions in this block.
    * `"hash"` - the `t:EthereumJSONRPC.hash/0` of the block.
    * `"logsBloom"` - `t:EthereumJSONRPC.data/0` for the [Bloom filter](https://en.wikipedia.org/wiki/Bloom_filter)
@@ -366,6 +368,7 @@ defmodule EthereumJSONRPC.Block do
            "extraData" => extra_data,
            "gasLimit" => gas_limit,
            "gasUsed" => gas_used,
+           "epoch" => epoch,
            "hash" => hash,
            "logsBloom" => logs_bloom,
            "miner" => miner_hash,
@@ -385,6 +388,7 @@ defmodule EthereumJSONRPC.Block do
       extra_data: extra_data,
       gas_limit: gas_limit,
       gas_used: gas_used,
+      epoch: epoch,
       hash: hash,
       logs_bloom: logs_bloom,
       miner_hash: miner_hash,
@@ -413,6 +417,7 @@ defmodule EthereumJSONRPC.Block do
            "gasLimit" => gas_limit,
            "gasUsed" => gas_used,
            "hash" => hash,
+           "epoch" => epoch,
            "logsBloom" => logs_bloom,
            "miner" => miner_hash,
            "number" => number,
@@ -432,6 +437,7 @@ defmodule EthereumJSONRPC.Block do
       gas_used: gas_used,
       hash: hash,
       logs_bloom: logs_bloom,
+      epoch: epoch,
       miner_hash: miner_hash,
       mix_hash: Map.get(elixir, "mixHash", "0x0"),
       nonce: Map.get(elixir, "nonce", 0),
@@ -458,6 +464,7 @@ defmodule EthereumJSONRPC.Block do
            "gasUsed" => gas_used,
            "hash" => hash,
            "logsBloom" => logs_bloom,
+           "epoch" => epoch,
            "miner" => miner_hash,
            "number" => number,
            "parentHash" => parent_hash,
@@ -477,6 +484,7 @@ defmodule EthereumJSONRPC.Block do
       hash: hash,
       logs_bloom: logs_bloom,
       miner_hash: miner_hash,
+      epoch: epoch,
       mix_hash: Map.get(elixir, "mixHash", "0x0"),
       nonce: Map.get(elixir, "nonce", 0),
       number: number,
@@ -504,6 +512,7 @@ defmodule EthereumJSONRPC.Block do
            "hash" => hash,
            "logsBloom" => logs_bloom,
            "miner" => miner_hash,
+           "epoch" => epoch,
            "number" => number,
            "parentHash" => parent_hash,
            "receiptsRoot" => receipts_root,
@@ -521,6 +530,7 @@ defmodule EthereumJSONRPC.Block do
       hash: hash,
       logs_bloom: logs_bloom,
       miner_hash: miner_hash,
+      epoch: epoch,
       mix_hash: Map.get(elixir, "mixHash", "0x0"),
       nonce: Map.get(elixir, "nonce", 0),
       number: number,
@@ -544,6 +554,7 @@ defmodule EthereumJSONRPC.Block do
            "gasLimit" => gas_limit,
            "gasUsed" => gas_used,
            "hash" => hash,
+           "epoch" => epoch,
            "logsBloom" => logs_bloom,
            "miner" => miner_hash,
            "number" => number,
@@ -567,6 +578,7 @@ defmodule EthereumJSONRPC.Block do
       mix_hash: Map.get(elixir, "mixHash", "0x0"),
       nonce: Map.get(elixir, "nonce", 0),
       number: number,
+      epoch: epoch,
       parent_hash: parent_hash,
       receipts_root: receipts_root,
       size: size,
@@ -960,7 +972,7 @@ defmodule EthereumJSONRPC.Block do
   defp entry_to_elixir({key, quantity}, _block)
        when key in ~w(difficulty gasLimit gasUsed minimumGasPrice baseFeePerGas number size
                       cumulativeDifficulty totalDifficulty paidFees blobGasUsed
-                      excessBlobGas l1BlockNumber sendCount) and
+                      excessBlobGas l1BlockNumber sendCount epoch) and
               not is_nil(quantity) do
     {key, quantity_to_integer(quantity)}
   end

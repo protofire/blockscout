@@ -22,7 +22,7 @@ defmodule Explorer.Chain.Block do
   alias Explorer.Chain.Block.{EmissionReward, Reward, SecondDegreeRelation}
   alias Explorer.Repo
 
-  @optional_attrs ~w(size refetch_needed total_difficulty difficulty base_fee_per_gas)a
+  @optional_attrs ~w(size refetch_needed total_difficulty difficulty base_fee_per_gas epoch)a
                   |> (&(case Application.compile_env(:explorer, :chain_type) do
                           "rsk" ->
                             &1 ++
@@ -104,6 +104,7 @@ defmodule Explorer.Chain.Block do
           number: block_number(),
           parent_hash: Hash.t(),
           size: non_neg_integer(),
+          epoch: non_neg_integer(),
           timestamp: DateTime.t(),
           total_difficulty: difficulty(),
           transactions: %Ecto.Association.NotLoaded{} | [Transaction.t()],
@@ -120,6 +121,7 @@ defmodule Explorer.Chain.Block do
     field(:gas_used, :decimal)
     field(:nonce, Hash.Nonce)
     field(:number, :integer)
+    field(:epoch, :integer)
     field(:size, :integer)
     field(:timestamp, :utc_datetime_usec)
     field(:total_difficulty, :decimal)

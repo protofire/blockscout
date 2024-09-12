@@ -40,6 +40,7 @@ defmodule BlockScoutWeb.API.V2.BlockView do
       "miner" => Helper.address_with_info(nil, block.miner, block.miner_hash, false),
       "size" => block.size,
       "hash" => block.hash,
+      "epoch" => block.epoch,
       "parent_hash" => block.parent_hash,
       "difficulty" => block.difficulty,
       "total_difficulty" => block.total_difficulty,

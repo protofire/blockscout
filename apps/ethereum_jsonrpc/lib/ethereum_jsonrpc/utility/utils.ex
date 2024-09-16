@@ -44,4 +44,19 @@ defmodule EthereumJSONRPC.Utility.Bech do
         "0x" <> hex_address
     end
   end
+
+  @doc """
+  Encodes a hexadecimal value to a Bech32-encoded string with the prefix 'one1'.
+
+  ## Examples
+
+      iex> EthereumJSONRPC.Utility.Bech.encode_bech_32("0x6162636465")
+      "one1abcde"
+
+  """
+  def encode_bech_32(hex_value) do
+    hex_value = String.replace_prefix(hex_value, "0x", "")
+    binary = :binary.decode_hex(hex_value)
+    if is_binary(binary), do: Bech32.encode("one", binary), else: "Invalid hex value"
+  end
 end

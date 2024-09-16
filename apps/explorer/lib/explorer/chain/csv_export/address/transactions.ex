@@ -7,6 +7,8 @@ defmodule Explorer.Chain.CsvExport.Address.Transactions do
   alias Explorer.Market.MarketHistory
   alias Explorer.Chain.{Address, DenormalizationHelper, Hash, Transaction, Wei}
   alias Explorer.Chain.CsvExport.Helper
+  alias EthereumJSONRPC.Utility.Bech
+  @paging_options %PagingOptions{page_size: Helper.limit()}
 
   @spec export(Hash.Address.t(), String.t(), String.t(), Keyword.t(), String.t() | nil, String.t() | nil) ::
           Enumerable.t()
@@ -47,10 +49,13 @@ defmodule Explorer.Chain.CsvExport.Address.Transactions do
       "BlockNumber",
       "UnixTimestamp",
       "FromAddress",
+      # "FromAddressOne",
       "ToAddress",
+      # "ToAddressOne",
       "ContractAddress",
       "Type",
       "Value",
+      "Value in USD",
       "Fee",
       "Status",
       "ErrCode",
@@ -76,21 +81,24 @@ defmodule Explorer.Chain.CsvExport.Address.Transactions do
           )
         end
       end)
-
     transaction_lists =
       transactions_with_decoded_data
       |> Stream.map(fn {decoded_data, transaction} ->
         {opening_price, closing_price} = date_to_prices[DateTime.to_date(Transaction.block_timestamp(transaction))]
-
+        price = exchange_rate.usd_value || closing_price || opening_price || Decimal.new("0")
+        total_value_usd = Wei.mult(transaction.value, price)
         [
           to_string(transaction.hash),
           transaction.block_number,
           Transaction.block_timestamp(transaction),
           Address.checksum(transaction.from_address_hash),
+          Address.checksum(transaction.from_address_hash) |> to_string |> Bech.encode_bech_32,
           Address.checksum(transaction.to_address_hash),
+          Address.checksum(transaction.to_address_hash) |> to_string |> Bech.encode_bech_32,
           Address.checksum(transaction.created_contract_address_hash),
           type(transaction, address_hash),
           Wei.to(transaction.value, :wei),
+          Wei.to(total_value_usd, :wei),
           fee(transaction),
           transaction.status,
           transaction.error,

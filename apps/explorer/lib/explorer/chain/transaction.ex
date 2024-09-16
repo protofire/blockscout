@@ -1397,6 +1397,11 @@ defmodule Explorer.Chain.Transaction do
           ],
           boolean()
         ) :: [__MODULE__.t()]
+  @spec address_to_transactions_without_rewards(Explorer.Chain.Hash.t(), [
+          {:necessity_by_association, %{optional(atom()) => :optional | :required}}
+          | {:paging_options, Explorer.PagingOptions.t()}
+          | {:sorting, [{any(), any()} | {any(), any(), any()} | {any(), any(), any(), any()}]}
+        ]) :: list()
   def address_to_transactions_without_rewards(address_hash, options, old_ui? \\ true) do
     paging_options = Keyword.get(options, :paging_options, Chain.default_paging_options())
 

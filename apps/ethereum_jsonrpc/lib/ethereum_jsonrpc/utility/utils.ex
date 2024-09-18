@@ -57,6 +57,7 @@ defmodule EthereumJSONRPC.Utility.Bech do
   def encode_bech_32(hex_value) do
     hex_value = String.replace_prefix(hex_value, "0x", "")
     binary = :binary.decode_hex(hex_value)
-    if is_binary(binary), do: Bech32.encode("one", binary), else: "Invalid hex value"
+    fiveBitBinary = Bech32.convertbits(binary, 8, 5, false)
+    if is_binary(fiveBitBinary), do: Bech32.encode_from_5bit("one", fiveBitBinary), else: "Invalid hex value"
   end
 end

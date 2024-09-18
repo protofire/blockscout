@@ -118,7 +118,8 @@ defmodule Explorer.Mixfile do
       {:cloak_ecto, "~> 1.2.0"},
       {:redix, "~> 1.1"},
       {:hammer_backend_redis, "~> 6.1"},
-      {:logger_json, "~> 5.1"}
+      {:logger_json, "~> 5.1"},
+      {:bech32, "~> 1.0"}
     ]
   end
 

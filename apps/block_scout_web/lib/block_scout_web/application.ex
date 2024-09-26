@@ -41,7 +41,7 @@ defmodule BlockScoutWeb.Application do
       {InternalTransactionsIndexedCounter, name: InternalTransactionsIndexedCounter}
     ]
 
-    opts = [strategy: :one_for_one, name: BlockScoutWeb.Supervisor, max_restarts: 1_000]
+    opts = [strategy: :one_for_one, name: BlockScoutWeb.Supervisor, max_restarts: 1_000, max_seconds: 60]
     Supervisor.start_link(children, opts)
   end
 

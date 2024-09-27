@@ -84,32 +84,40 @@ defmodule Explorer.Chain.Cache.AddressesTabsCounters do
   def handle_cast({:set_txs_state, address_hash, %{txs_types: txs_types} = results}, state) do
     address_hash = lowercased_string(address_hash)
 
-    if ignored?(state[address_hash]) do
-      {:noreply, state}
-    else
-      address_state =
-        txs_types
-        |> Enum.reduce(state[address_hash] || %{}, fn tx_type, acc ->
-          Map.put(acc, tx_type, results[tx_type])
-        end)
-        |> (&Map.put(&1, :txs_types, (txs_types ++ (&1[:txs_types] || [])) |> Enum.uniq())).()
+    try do
+      current_state = Map.get(state, address_hash)
 
-      counter =
-        Counters.txs_types()
-        |> Enum.reduce([], fn type, acc ->
-          (address_state[type] || []) ++ acc
-        end)
-        |> Enum.uniq()
-        |> Enum.count()
-        |> min(Counters.counters_limit())
-
-      if counter == Counters.counters_limit() || Enum.count(address_state[:txs_types]) == 3 do
-        set_counter(:txs, address_hash, counter, false)
-        {:noreply, Map.put(state, address_hash, {:updated, DateTime.utc_now()})}
+      if ignored?(current_state) do
+        {:noreply, state}
       else
-        {:noreply, Map.put(state, address_hash, address_state)}
+        address_state =
+          txs_types
+          |> Enum.reduce(current_state || %{}, fn tx_type, acc ->
+            Map.put(acc, tx_type, results[tx_type])
+          end)
+          |> (&Map.put(&1, :txs_types, (txs_types ++ (&1[:txs_types] || [])) |> Enum.uniq())).()
+
+        counter =
+          Counters.txs_types()
+          |> Enum.reduce([], fn type, acc ->
+            (address_state[type] || []) ++ acc
+          end)
+          |> Enum.uniq()
+          |> Enum.count()
+          |> min(Counters.counters_limit())
+
+        if counter == Counters.counters_limit() || Enum.count(address_state[:txs_types]) == 3 do
+          set_counter(:txs, address_hash, counter, false)
+          {:noreply, Map.put(state, address_hash, {:updated, DateTime.utc_now()})}
+        else
+          {:noreply, Map.put(state, address_hash, address_state)}
+        end
       end
-    end
+    catch
+      :error, %BadMapError{} = e ->
+        Logger.error("Caught BadMapError: #{inspect(e)} for address: #{address_hash}")
+        {:noreply, state}
+      end
   end
 
   defp ignored?({:updated, datetime}), do: up_to_date?(datetime, ttl())

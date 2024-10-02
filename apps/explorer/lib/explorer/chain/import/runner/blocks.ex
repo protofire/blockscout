@@ -367,6 +367,7 @@ defmodule Explorer.Chain.Import.Runner.Blocks do
     base_fields = [
       consensus: dynamic(fragment("EXCLUDED.consensus")),
       difficulty: dynamic(fragment("EXCLUDED.difficulty")),
+      epoch: fragment("EXCLUDED.epoch"),
       gas_limit: dynamic(fragment("EXCLUDED.gas_limit")),
       gas_used: dynamic(fragment("EXCLUDED.gas_used")),
       miner_hash: dynamic(fragment("EXCLUDED.miner_hash")),
@@ -388,7 +389,8 @@ defmodule Explorer.Chain.Import.Runner.Blocks do
       dynamic(
         [block],
         fragment(
-          "(EXCLUDED.consensus, EXCLUDED.difficulty, EXCLUDED.gas_limit, EXCLUDED.gas_used, EXCLUDED.miner_hash, EXCLUDED.nonce, EXCLUDED.number, EXCLUDED.parent_hash, EXCLUDED.size, EXCLUDED.timestamp, EXCLUDED.total_difficulty, EXCLUDED.refetch_needed, EXCLUDED.base_fee_per_gas, EXCLUDED.is_empty) IS DISTINCT FROM (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          "(EXCLUDED.epoch, EXCLUDED.consensus, EXCLUDED.difficulty, EXCLUDED.gas_limit, EXCLUDED.gas_used, EXCLUDED.miner_hash, EXCLUDED.nonce, EXCLUDED.number, EXCLUDED.parent_hash, EXCLUDED.size, EXCLUDED.timestamp, EXCLUDED.total_difficulty, EXCLUDED.refetch_needed, EXCLUDED.base_fee_per_gas, EXCLUDED.is_empty) IS DISTINCT FROM (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+          block.epoch,
           block.consensus,
           block.difficulty,
           block.gas_limit,

@@ -72,8 +72,10 @@ defmodule BlockScoutWeb.API.V2.AddressController do
 
   @contract_address_preloads [
     :smart_contract,
-    :contracts_creation_internal_transaction,
-    :contracts_creation_transaction
+    # Commenting out these preloads because they are returning a lot of data and causing performance issues
+    # and the data is not needed for the API response.
+    # :contracts_creation_internal_transaction,
+    # :contracts_creation_transaction
   ]
 
   @nft_necessity_by_association [

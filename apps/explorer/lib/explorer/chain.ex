@@ -2336,6 +2336,17 @@ defmodule Explorer.Chain do
     range_min = min(range_start, range_end)
     range_max = max(range_start, range_end)
 
+    # Prefix index on blocks(number)
+    # """
+    #         (
+    #           SELECT distinct b1.number
+    #           FROM generate_series((?)::integer, (?)::integer) AS b1(number)
+    #           WHERE NOT EXISTS
+    #             (SELECT 1 FROM blocks b2 WHERE b2.number=b1.number AND b2.consensus)
+    #           ORDER BY b1.number DESC
+    #         )
+    # """
+
     ordered_missing_query =
       from(b in Block,
         right_join:

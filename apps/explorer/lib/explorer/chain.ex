@@ -2356,7 +2356,7 @@ defmodule Explorer.Chain do
               SELECT distinct b1.number
               FROM generate_series((?)::integer, (?)::integer) AS b1(number)
               WHERE NOT EXISTS
-                (SELECT 1 FROM blocks b2 WHERE b2.number=b1.number AND b2.consensus)
+                (SELECT 1 FROM blocks b2 WHERE (b2.number=b1.number AND b2.consensus) OR (b2.number=b1.number AND b2.epoch IS NULL))
               ORDER BY b1.number DESC
             )
             """,

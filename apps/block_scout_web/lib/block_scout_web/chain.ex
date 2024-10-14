@@ -1023,6 +1023,9 @@ defmodule BlockScoutWeb.Chain do
     end)
   end
 
+  @spec parse_block_hash_or_number_param(binary()) ::
+          {:error, {:invalid, :hash | :number}}
+          | {:ok, :hash | :number, integer() | Explorer.Chain.Hash.t()}
   def parse_block_hash_or_number_param("0x" <> _ = param) do
     case string_to_full_hash(param) do
       {:ok, hash} ->

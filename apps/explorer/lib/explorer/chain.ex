@@ -5314,4 +5314,12 @@ defmodule Explorer.Chain do
   def default_paging_options do
     @default_paging_options
   end
+
+  def update_epoch_if_not_exists(block, epoch) do
+    changeset = Block.changeset(block, %{epoch: epoch})
+    case Repo.update(changeset) do
+      {:ok, _} -> {:ok, block}
+      _ -> {:error, "There was an error updating the epoch."}
+    end
+  end
 end

@@ -163,7 +163,7 @@ defmodule Explorer.Chain.StakingTransaction do
   def address_hash_to_staking_transactions_query(address_hash) do
     address_hash
     |> address_hash_to_staking_transactions_unordered_query()
-    |> order_by(desc: :timestamp)
+    |> order_by(desc: :block_number)
   end
 
   @spec address_hash_to_staking_transactions_unordered_query(Hash.Address.t()) :: Ecto.Query.t()
@@ -177,8 +177,8 @@ defmodule Explorer.Chain.StakingTransaction do
   @spec page_staking_transactions(Ecto.Query.t(), PagingOptions.t()) :: Ecto.Query.t()
   def page_staking_transactions(query, %PagingOptions{key: nil}), do: query
 
-  def page_staking_transactions(query, %PagingOptions{key: {timestamp}}) do
-    where(query, [staking_transaction], staking_transaction.timestamp < ^timestamp)
+  def page_staking_transactions(query, %PagingOptions{key: {block_number}}) do
+    where(query, [staking_transaction], staking_transaction.block_number < ^block_number)
   end
 
   @doc """

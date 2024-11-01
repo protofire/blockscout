@@ -453,6 +453,11 @@ defmodule BlockScoutWeb.Chain do
     [paging_options: %{@default_paging_options | key: {token_contract_address_hash, token_id, token_type}}]
   end
 
+  def paging_options(%{"block_number" => block_number})
+      when is_integer(block_number) do
+    [paging_options: %{@default_paging_options | key: {block_number}}]
+  end
+
   def paging_options(%{"token_contract_address_hash" => token_contract_address_hash, "token_type" => token_type}) do
     [paging_options: %{@default_paging_options | key: {token_contract_address_hash, token_type}}]
   end

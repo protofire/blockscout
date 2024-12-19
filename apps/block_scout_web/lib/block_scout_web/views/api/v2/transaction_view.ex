@@ -184,6 +184,17 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     }
   end
 
+  def render("transaction_staking_reward.json", %{conn: conn, transaction: transaction, reward: reward}) do
+    block_height = Chain.block_height(@api_true)
+    {decoded_transactions, _, _} = decode_transactions([transaction], true)
+
+    Map.put(
+      prepare_transaction(transaction, conn, true, block_height, nil, decoded_transactions),
+      :claimed_reward,
+      reward
+    )
+  end
+
   @doc """
     Decodes list of logs
   """

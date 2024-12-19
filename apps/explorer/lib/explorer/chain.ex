@@ -2899,6 +2899,28 @@ defmodule Explorer.Chain do
     |> select_repo(options).all()
   end
 
+  @spec transaction_to_reward_log(Hash.Full.t(), [paging_options | necessity_by_association_option | api?]) :: [Log.t()]
+  def transaction_to_reward_log(transaction_hash, options \\ []) when is_list(options) do
+    log_with_transactions =
+      from(log in Log,
+        inner_join: transaction in Transaction,
+        on:
+          transaction.block_hash == log.block_hash and transaction.block_number == log.block_number and
+            transaction.hash == log.transaction_hash
+      )
+
+    {:ok, claim_rewards_event} =
+      Chain.string_to_transaction_hash("0xef0a8d7b9b8cbde3c16f5ea86afc300881518ffc9f6e8c8f6984e0037eec16fb")
+
+    query =
+      log_with_transactions
+      |> where([_, transaction], transaction.hash == ^transaction_hash)
+      |> where([log], log.first_topic == ^claim_rewards_event)
+
+    query
+    |> select_repo(options).one()
+  end
+
   @spec staking_transaction_to_logs(Hash.Full.t(), [paging_options | necessity_by_association_option | api?]) :: [
           StakingLog.t()
         ]
@@ -2924,6 +2946,27 @@ defmodule Explorer.Chain do
 
     query
     |> select_repo(options).all()
+  end
+
+  def staking_transaction_rewards(transaction_hash, options \\ []) when is_list(options) do
+    log_with_transactions =
+      from(log in StakingLog,
+        inner_join: transaction in StakingTransaction,
+        on:
+          transaction.block_hash == log.block_hash and transaction.block_number == log.block_number and
+            transaction.hash == log.transaction_hash
+      )
+
+    {:ok, claim_rewards_event} =
+      Chain.string_to_transaction_hash("0xef0a8d7b9b8cbde3c16f5ea86afc300881518ffc9f6e8c8f6984e0037eec16fb")
+
+    query =
+      log_with_transactions
+      |> where([_, transaction], transaction.hash == ^transaction_hash)
+      |> where([log], log.first_topic == ^claim_rewards_event)
+
+    query
+    |> select_repo(options).one()
   end
 
   @doc """
@@ -5306,6 +5349,7 @@ defmodule Explorer.Chain do
 
   def update_epoch_if_not_exists(block, epoch) do
     changeset = Block.changeset(block, %{epoch: epoch})
+
     case Repo.update(changeset) do
       {:ok, _} -> {:ok, block}
       _ -> {:error, "There was an error updating the epoch."}

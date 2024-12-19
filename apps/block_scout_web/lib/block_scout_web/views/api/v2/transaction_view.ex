@@ -234,6 +234,17 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     |> Enum.map(&prepare_signed_authorization/1)
   end
 
+  def render("transaction_staking_reward.json", %{conn: conn, transaction: transaction, reward: reward}) do
+    block_height = Chain.block_height(@api_true)
+    {decoded_transactions, _, _} = decode_transactions([transaction], true)
+
+    Map.put(
+      prepare_transaction(transaction, conn, true, block_height, nil, decoded_transactions),
+      :claimed_reward,
+      reward
+    )
+  end
+
   @doc """
   Returns the ABI of a smart contract or an empty list if the smart contract is nil
   """

@@ -177,15 +177,32 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
              @token_transfers_in_transaction_necessity_by_association,
              @api_true |> fetch_scam_token_toggle(conn)
            ) do
-      conn
-      |> put_status(200)
-      |> render(:transaction, %{
-        transaction:
-          preloaded
-          |> Instance.preload_nft(@api_true)
-          |> maybe_preload_ens_to_transaction()
-          |> maybe_preload_metadata_to_transaction()
-      })
+            case {Chain.hash_to_lower_case_string(transaction.input), Chain.transaction_to_reward_log(transaction_hash)} do
+        # CollectReward Input
+        {"0x6d6b2f77" <> _, %{data: hex_reward_value}} ->
+          reward =
+            hex_reward_value
+            |> Chain.hash_to_lower_case_string()
+            |> (fn "0x" <> reward_hex -> String.to_integer(reward_hex, 16) end).()
+            |> Integer.to_string()
+
+          conn
+          |> put_status(200)
+          |> render(:transaction_staking_reward, %{
+            transaction: transaction |> maybe_preload_ens_to_transaction(),
+            reward: reward
+          })
+         _ ->
+          conn
+          |> put_status(200)
+          |> render(:transaction, %{
+            transaction:
+              preloaded
+              |> Instance.preload_nft(@api_true)
+              |> maybe_preload_ens_to_transaction()
+              |> maybe_preload_metadata_to_transaction()
+          })
+      end
     end
   end
 

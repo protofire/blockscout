@@ -377,8 +377,8 @@ config :explorer, Explorer.Chain.Cache.Counters.TokenTransfersCount,
 
 config :explorer, Explorer.Chain.Cache.Counters.AverageBlockTime,
   enabled: true,
-  period: :timer.minutes(10),
-  cache_period: ConfigHelper.parse_time_env_var("CACHE_AVERAGE_BLOCK_PERIOD", "30m")
+  period: :timer.minutes(1),
+  cache_period: ConfigHelper.parse_time_env_var("CACHE_AVERAGE_BLOCK_PERIOD", "1m")
 
 config :explorer, Explorer.Market.MarketHistoryCache,
   cache_period: ConfigHelper.parse_time_env_var("CACHE_MARKET_HISTORY_PERIOD", "6h")

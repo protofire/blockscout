@@ -59,10 +59,6 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionController do
           |> put_status(200)
           |> render(:staking_transaction, %{transaction: transaction |> maybe_preload_ens_to_transaction()})
       end
-
-      conn
-      |> put_status(200)
-      |> render(:staking_transaction, %{transaction: transaction |> maybe_preload_ens_to_transaction()})
     end
   end
 

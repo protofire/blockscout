@@ -10,8 +10,8 @@ defmodule Explorer.Counters.AverageBlockTime do
   alias Explorer.Repo
   alias Timex.Duration
 
-  @num_of_blocks 100
-  @offset 100
+  @num_of_blocks 32768
+  @offset 32768
 
   @doc """
   Starts a process to periodically update the counter of the token holders.

@@ -55,6 +55,7 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionView do
       gas_price: transaction.gas_price,
       gas: transaction.gas,
       gas_used: transaction.gas_used,
+      claimed_reward: Map.get(transaction, :claimed_reward, nil),
       cumulative_gas_used: transaction.cumulative_gas_used,
       status: transaction.status,
       type: transaction.type,

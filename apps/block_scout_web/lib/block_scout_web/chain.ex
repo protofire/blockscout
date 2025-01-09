@@ -69,6 +69,7 @@ defmodule BlockScoutWeb.Chain do
     |> case do
       "to" -> [direction: :to, paging_options: paging_options]
       "from" -> [direction: :from, paging_options: paging_options]
+      "staking_transactions" -> [direction: :staking_transactions, paging_options: paging_options]
       _ -> [paging_options: paging_options]
     end
   end
@@ -79,6 +80,7 @@ defmodule BlockScoutWeb.Chain do
     |> case do
       "to" -> [direction: :to]
       "from" -> [direction: :from]
+      "staking_transactions" -> [direction: :staking_transactions]
       _ -> []
     end
   end

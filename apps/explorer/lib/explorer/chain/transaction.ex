@@ -954,11 +954,11 @@ defmodule Explorer.Chain.Transaction do
     ]
   end
 
-  def matching_address_queries_list(query, :staking_transactions, _address_hash) do
+  def matching_address_queries_list(query, :staking_transactions, address_hash) do
     {:ok, staking_contract_address} = Hash.Address.cast("0x00000000000000000000000000000000000000fc")
 
     [
-      where(query, [t], t.to_address_hash == ^staking_contract_address)
+      where(query, [t], t.from_address_hash == ^address_hash and t.to_address_hash == ^staking_contract_address)
     ]
   end
 

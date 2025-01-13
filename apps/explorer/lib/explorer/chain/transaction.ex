@@ -1411,6 +1411,7 @@ defmodule Explorer.Chain.Transaction do
     address_hash
     |> address_to_transactions_tasks(options, old_ui?)
     |> wait_for_address_transactions()
+    |> fetch_staking_information()
     |> Enum.sort(compare_custom_sorting(Keyword.get(options, :sorting, [])))
     |> Enum.dedup_by(& &1.hash)
     |> Enum.take(paging_options.page_size)
@@ -1694,4 +1695,50 @@ defmodule Explorer.Chain.Transaction do
       "hash" => hash
     }
   end
+
+  @spec fetch_staking_information([Explorer.Chain.Transaction.t()]) :: [Explorer.Chain.Transaction.t()]
+  def fetch_staking_information(transaction) when not is_list(transaction) do
+    fetch_staking_information([transaction]) |> Enum.at(0)
+  end
+
+  def fetch_staking_information(transactions) when is_list(transactions) do
+    collect_rewards_method = "0x6d6b2f77"
+    delegate_method = "0x510b11bb"
+    undelegate_method = "0xbda8c0e9"
+
+    transactions
+    |> Enum.map(fn tx ->
+      case Chain.hash_to_lower_case_string(tx.input) do
+        ^collect_rewards_method <> _ -> Map.put(tx, :claimed_reward, fetch_staking_rewards_from_transaction_logs(tx))
+        # TODO
+        ^delegate_method <> _ -> tx
+        # TODO
+        ^undelegate_method <> _ -> tx
+        _ -> tx
+      end
+    end)
+  end
+
+  defp fetch_staking_rewards_from_transaction_logs(%{logs: logs} = _transaction) do
+    {:ok, claim_rewards_log_topic} =
+      Chain.string_to_transaction_hash("0xef0a8d7b9b8cbde3c16f5ea86afc300881518ffc9f6e8c8f6984e0037eec16fb")
+
+    logs
+    |> Enum.map(fn log ->
+      case log.first_topic == claim_rewards_log_topic do
+        true ->
+          log.data
+          |> Chain.hash_to_lower_case_string()
+          |> (fn "0x" <> reward_hex -> String.to_integer(reward_hex, 16) end).()
+          |> Integer.to_string()
+
+        false ->
+          nil
+      end
+    end)
+    |> Enum.uniq()
+    |> Enum.at(0)
+  end
+
+  defp fetch_staking_rewards_from_transaction_logs(transaction), do: transaction
 end

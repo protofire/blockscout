@@ -38,7 +38,8 @@ defmodule BlockScoutWeb.API.V2.AddressController do
       :block => :optional,
       [created_contract_address: :smart_contract] => :optional,
       [from_address: :smart_contract] => :optional,
-      [to_address: :smart_contract] => :optional
+      [to_address: :smart_contract] => :optional,
+      :logs => :optional
     },
     api?: true
   ]
@@ -47,7 +48,8 @@ defmodule BlockScoutWeb.API.V2.AddressController do
     necessity_by_association: %{
       [from_address: :names] => :optional,
       :block => :optional,
-      [from_address: :smart_contract] => :optional
+      [from_address: :smart_contract] => :optional,
+      :logs => :optional
     },
     api?: true
   ]
@@ -169,17 +171,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
         |> Keyword.merge(current_filter(params))
         |> Keyword.merge(address_transactions_sorting(params))
 
-      results_plus_one =
-        Chain.address_to_staking_transactions(address_hash, options)
-        |> Enum.map(fn %{hash: hash} = transaction ->
-          claimed_reward =
-            case Chain.staking_transaction_rewards(hash) do
-              %{data: reward} -> reward
-              _ -> nil
-            end
-
-          Map.put(transaction, :claimed_reward, claimed_reward)
-        end)
+      results_plus_one = Chain.address_to_staking_transactions(address_hash, options)
 
       {transactions, next_page} = split_list_by_page(results_plus_one)
 
@@ -195,7 +187,7 @@ defmodule BlockScoutWeb.API.V2.AddressController do
       |> put_status(200)
       |> put_view(StakingTransactionView)
       |> render(:staking_transactions, %{
-        transactions: transactions |> maybe_preload_ens(),
+        transactions: transactions |> maybe_preload_ens() |> Chain.Transaction.fetch_staking_information(),
         next_page_params: next_page_params
       })
     end

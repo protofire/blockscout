@@ -2948,27 +2948,6 @@ defmodule Explorer.Chain do
     |> select_repo(options).all()
   end
 
-  def staking_transaction_rewards(transaction_hash, options \\ []) when is_list(options) do
-    log_with_transactions =
-      from(log in StakingLog,
-        inner_join: transaction in StakingTransaction,
-        on:
-          transaction.block_hash == log.block_hash and transaction.block_number == log.block_number and
-            transaction.hash == log.transaction_hash
-      )
-
-    {:ok, claim_rewards_event} =
-      Chain.string_to_transaction_hash("0xef0a8d7b9b8cbde3c16f5ea86afc300881518ffc9f6e8c8f6984e0037eec16fb")
-
-    query =
-      log_with_transactions
-      |> where([_, transaction], transaction.hash == ^transaction_hash)
-      |> where([log], log.first_topic == ^claim_rewards_event)
-
-    query
-    |> select_repo(options).one()
-  end
-
   @doc """
   Finds all `t:Explorer.Chain.TokenTransfer.t/0`s for `t:Explorer.Chain.Transaction.t/0`.
 

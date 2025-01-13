@@ -184,17 +184,6 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     }
   end
 
-  def render("transaction_staking_reward.json", %{conn: conn, transaction: transaction, reward: reward}) do
-    block_height = Chain.block_height(@api_true)
-    {decoded_transactions, _, _} = decode_transactions([transaction], true)
-
-    Map.put(
-      prepare_transaction(transaction, conn, true, block_height, nil, decoded_transactions),
-      :claimed_reward,
-      reward
-    )
-  end
-
   @doc """
     Decodes list of logs
   """
@@ -448,12 +437,14 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
       "tx_tag" => GetTransactionTags.get_transaction_tags(transaction.hash, current_user(single_tx? && conn)),
       "has_error_in_internal_txs" => transaction.has_error_in_internal_txs,
       "shard_id" => transaction.shard_id,
-      "to_shard_id" => transaction.to_shard_id
+      "to_shard_id" => transaction.to_shard_id,
+      "abuble" => 1
     }
 
     result
     |> chain_type_fields(transaction, single_tx?, conn, watchlist_names)
     |> maybe_put_stability_fee(transaction)
+    |> maybe_put_claimed_rewards_value(transaction)
   end
 
   defp chain_type_fields(result, transaction, single_tx?, conn, watchlist_names) do
@@ -989,4 +980,10 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
         body
     end
   end
+
+  defp maybe_put_claimed_rewards_value(body, %{claimed_reward: claimed_reward} = _transaction) do
+    Map.put(body, :claimed_reward, claimed_reward)
+  end
+
+  defp maybe_put_claimed_rewards_value(body, _transaction), do: body
 end

@@ -43,10 +43,6 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionView do
     }
   end
 
-  def render("staking_transaction_reward.json", %{transaction: transaction, reward: reward}) do
-    Map.put(prepare_transaction(transaction), :claimed_reward, reward)
-  end
-
   defp prepare_transaction(transaction) do
     %{
       hash: transaction.hash,

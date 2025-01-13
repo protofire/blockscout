@@ -1,4 +1,5 @@
 defmodule BlockScoutWeb.API.V2.TransactionController do
+  alias BlockScoutWeb.Resolvers.Transaction
   use BlockScoutWeb, :controller
   use Utils.CompileTimeEnvHelper, chain_type: [:explorer, :chain_type]
 
@@ -222,7 +223,8 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
       |> Keyword.merge(type_filter_options(params))
       |> Keyword.merge(@api_true)
 
-    transactions_plus_one = Chain.recent_transactions(full_options, filter_options)
+    transactions_plus_one =
+      Chain.recent_transactions(full_options, filter_options) |> Transaction.fetch_staking_information()
 
     {transactions, next_page} = split_list_by_page(transactions_plus_one)
 

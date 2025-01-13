@@ -534,7 +534,8 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
       "has_error_in_internal_transactions" => transaction.has_error_in_internal_transactions,
       "authorization_list" => authorization_list(transaction.signed_authorizations),
       "shard_id" => transaction.shard_id,
-      "to_shard_id" => transaction.to_shard_id
+      "to_shard_id" => transaction.to_shard_id,
+      "abuble" => 1
     }
 
     result
@@ -989,4 +990,10 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
   defp do_with_chain_type_fields(_chain_type, result, _transaction, _single_transaction?, _conn, _watchlist_names) do
     result
   end
+
+  defp maybe_put_claimed_rewards_value(body, %{claimed_reward: claimed_reward} = _transaction) do
+    Map.put(body, :claimed_reward, claimed_reward)
+  end
+
+  defp maybe_put_claimed_rewards_value(body, _transaction), do: body
 end

@@ -1,4 +1,5 @@
 defmodule BlockScoutWeb.API.V2.StakingTransactionController do
+  alias BlockScoutWeb.Resolvers.Transaction
   use BlockScoutWeb, :controller
 
   import Explorer.MicroserviceInterfaces.BENS, only: [maybe_preload_ens_to_transaction: 1]
@@ -34,31 +35,16 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionController do
   def staking_transaction(conn, %{"staking_transactions_hash_param" => staking_transaction_hash_string} = params) do
     necessity_by_association = @staking_transaction_necessity_by_association
 
-    with {:ok, transaction, transaction_hash} <-
+    with {:ok, transaction, _transaction_hash} <-
            validate_transaction(staking_transaction_hash_string, params,
              necessity_by_association: necessity_by_association,
              api?: true
            ) do
-      case {transaction.type == :collect_rewards, Chain.staking_transaction_rewards(transaction_hash)} do
-        {true, %{data: hex_reward_value}} ->
-          reward =
-            hex_reward_value
-            |> Chain.hash_to_lower_case_string()
-            |> (fn "0x" <> reward_hex -> String.to_integer(reward_hex, 16) end).()
-            |> Integer.to_string()
-
-          conn
-          |> put_status(200)
-          |> render(:staking_transaction_reward, %{
-            transaction: transaction |> maybe_preload_ens_to_transaction(),
-            reward: reward
-          })
-
-        _ ->
-          conn
-          |> put_status(200)
-          |> render(:staking_transaction, %{transaction: transaction |> maybe_preload_ens_to_transaction()})
-      end
+      conn
+      |> put_status(200)
+      |> render(:staking_transaction, %{
+        transaction: transaction |> maybe_preload_ens_to_transaction() |> Chain.Transaction.fetch_staking_information()
+      })
     end
   end
 

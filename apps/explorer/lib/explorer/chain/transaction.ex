@@ -1702,18 +1702,15 @@ defmodule Explorer.Chain.Transaction do
   end
 
   def fetch_staking_information(transactions) when is_list(transactions) do
-    collect_rewards_method = "0x6d6b2f77"
-    delegate_method = "0x510b11bb"
-    undelegate_method = "0xbda8c0e9"
-
     transactions
     |> Enum.map(fn tx ->
       case Chain.hash_to_lower_case_string(tx.input) do
-        ^collect_rewards_method <> _ -> Map.put(tx, :claimed_reward, fetch_staking_rewards_from_transaction_logs(tx))
-        # TODO
-        ^delegate_method <> _ -> tx
-        # TODO
-        ^undelegate_method <> _ -> tx
+        # Collect Rewards Method
+        "0x6d6b2f77" <> _ -> Map.put(tx, :claimed_reward, fetch_staking_rewards_from_transaction_logs(tx))
+        # Delegate Method - TODO
+        "0x510b11bb" <> _ -> tx
+        # Undelegate Method - TODO
+        "0xbda8c0e9" <> _ -> tx
         _ -> tx
       end
     end)

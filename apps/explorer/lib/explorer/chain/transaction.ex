@@ -1706,12 +1706,19 @@ defmodule Explorer.Chain.Transaction do
     |> Enum.map(fn tx ->
       case Chain.hash_to_lower_case_string(tx.input) do
         # Collect Rewards Method
-        "0x6d6b2f77" <> _ -> Map.put(tx, :claimed_reward, fetch_staking_rewards_from_transaction_logs(tx))
-        # Delegate Method - TODO
-        "0x510b11bb" <> _ -> tx
-        # Undelegate Method - TODO
-        "0xbda8c0e9" <> _ -> tx
-        _ -> tx
+        "0x6d6b2f77" <> _parameters ->
+          Map.put(tx, :claimed_reward, fetch_staking_rewards_from_transaction_logs(tx))
+
+        # Delegate Method
+        "0x510b11bb" <> parameters ->
+          Map.put(tx, :delegated_amount, fetch_string_amount_from_raw_input(parameters))
+
+        # Undelegate Method
+        "0xbda8c0e9" <> parameters ->
+          Map.put(tx, :undelegated_amount, fetch_string_amount_from_raw_input(parameters))
+
+        _ ->
+          tx
       end
     end)
   end
@@ -1738,4 +1745,15 @@ defmodule Explorer.Chain.Transaction do
   end
 
   defp fetch_staking_rewards_from_transaction_logs(transaction), do: transaction
+
+  # This method assumes that input size is always a string of 96 bytes.
+  # Input represents three parameters of 32 bytes each, from which only
+  # the last parameter (delegated/undelegated amount) is relevant for
+  # this function.
+  defp fetch_string_amount_from_raw_input(input) when is_binary(input) do
+    case String.length(input) do
+      192 -> input |> String.slice(128..-1//1) |> String.to_integer(16) |> Integer.to_string()
+      _ -> nil
+    end
+  end
 end

@@ -444,7 +444,7 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     result
     |> chain_type_fields(transaction, single_tx?, conn, watchlist_names)
     |> maybe_put_stability_fee(transaction)
-    |> maybe_put_claimed_rewards_value(transaction)
+    |> maybe_put_staking_values(transaction)
   end
 
   defp chain_type_fields(result, transaction, single_tx?, conn, watchlist_names) do
@@ -981,9 +981,17 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     end
   end
 
-  defp maybe_put_claimed_rewards_value(body, %{claimed_reward: claimed_reward} = _transaction) do
+  defp maybe_put_staking_values(body, %{claimed_reward: claimed_reward} = _transaction) do
     Map.put(body, :claimed_reward, claimed_reward)
   end
 
-  defp maybe_put_claimed_rewards_value(body, _transaction), do: body
+  defp maybe_put_staking_values(body, %{delegated_amount: delegated_amount} = _transaction) do
+    Map.put(body, :delegated_amount, delegated_amount)
+  end
+
+  defp maybe_put_staking_values(body, %{undelegated_amount: undelegated_amount} = _transaction) do
+    Map.put(body, :undelegated_amount, undelegated_amount)
+  end
+
+  defp maybe_put_staking_values(body, _transaction), do: body
 end

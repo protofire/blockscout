@@ -991,9 +991,17 @@ defmodule BlockScoutWeb.API.V2.TransactionView do
     result
   end
 
-  defp maybe_put_claimed_rewards_value(body, %{claimed_reward: claimed_reward} = _transaction) do
+  defp maybe_put_staking_values(body, %{claimed_reward: claimed_reward} = _transaction) do
     Map.put(body, :claimed_reward, claimed_reward)
   end
 
-  defp maybe_put_claimed_rewards_value(body, _transaction), do: body
+  defp maybe_put_staking_values(body, %{delegated_amount: delegated_amount} = _transaction) do
+    Map.put(body, :delegated_amount, delegated_amount)
+  end
+
+  defp maybe_put_staking_values(body, %{undelegated_amount: undelegated_amount} = _transaction) do
+    Map.put(body, :undelegated_amount, undelegated_amount)
+  end
+
+  defp maybe_put_staking_values(body, _transaction), do: body
 end

@@ -461,6 +461,7 @@ defmodule Explorer.Chain do
     |> join_associations(necessity_by_association)
     |> Transaction.put_has_token_transfers_to_transaction(old_ui?)
     |> (&if(old_ui?, do: preload(&1, [{:token_transfers, [:token, :from_address, :to_address]}]), else: &1)).()
+    |> Transaction.fetch_staking_information()
     |> select_repo(options).all()
   end
 

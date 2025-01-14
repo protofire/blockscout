@@ -149,9 +149,10 @@ defmodule BlockScoutWeb.API.V2.BlockController do
   def block(conn, %{"block_hash_or_number" => block_hash_or_number}) do
     with {:ok, block} <- block_param_to_block(block_hash_or_number, @block_params) do
       final_block = update_epoch_if_not_exists(block)
+
       conn
-        |> put_status(200)
-        |> render(:block, %{block: final_block})
+      |> put_status(200)
+      |> render(:block, %{block: final_block})
     end
   end
 
@@ -180,7 +181,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
       full_options
       |> Keyword.merge(paging_options(params))
       |> Keyword.merge(@api_true)
-      |> Keyword.merge([with_transactions: true])
+      |> Keyword.merge(with_transactions: true)
       |> Chain.list_blocks()
 
     {blocks, next_page} = split_list_by_page(blocks_plus_one)
@@ -468,10 +469,12 @@ defmodule BlockScoutWeb.API.V2.BlockController do
 
   defp fetch_rpc_block(block) do
     json_rpc_named_arguments = Application.get_env(:explorer, :json_rpc_named_arguments)
+
     case EthereumJSONRPC.fetch_blocks_by_numbers([block.number], json_rpc_named_arguments, false) do
       {:ok, blocks} ->
         rpc_block = blocks.blocks_params |> List.first()
         update_epoch_db(block, rpc_block)
+
       {:error, reason} ->
         block
     end
@@ -481,6 +484,7 @@ defmodule BlockScoutWeb.API.V2.BlockController do
     case Chain.update_epoch_if_not_exists(block, rpc_block.epoch) do
       {:ok, _} ->
         %{block | epoch: rpc_block.epoch}
+
       {:error, reason} ->
         block
     end

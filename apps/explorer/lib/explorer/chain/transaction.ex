@@ -954,6 +954,14 @@ defmodule Explorer.Chain.Transaction do
     ]
   end
 
+  def matching_address_queries_list(query, :staking_transactions, address_hash) do
+    {:ok, staking_contract_address} = Hash.Address.cast("0x00000000000000000000000000000000000000fc")
+
+    [
+      where(query, [t], t.from_address_hash == ^address_hash and t.to_address_hash == ^staking_contract_address)
+    ]
+  end
+
   def matching_address_queries_list(query, _direction, address_hash) do
     [
       where(query, [t], t.from_address_hash == ^address_hash),
@@ -1408,6 +1416,7 @@ defmodule Explorer.Chain.Transaction do
     address_hash
     |> address_to_transactions_tasks(options, old_ui?)
     |> wait_for_address_transactions()
+    |> fetch_staking_information()
     |> Enum.sort(compare_custom_sorting(Keyword.get(options, :sorting, [])))
     |> Enum.dedup_by(& &1.hash)
     |> Enum.take(paging_options.page_size)
@@ -1690,5 +1699,66 @@ defmodule Explorer.Chain.Transaction do
       "inserted_at" => inserted_at,
       "hash" => hash
     }
+  end
+
+  @spec fetch_staking_information([Explorer.Chain.Transaction.t()]) :: [Explorer.Chain.Transaction.t()]
+  def fetch_staking_information(transaction) when not is_list(transaction) do
+    fetch_staking_information([transaction]) |> Enum.at(0)
+  end
+
+  def fetch_staking_information(transactions) when is_list(transactions) do
+    transactions
+    |> Enum.map(fn tx ->
+      case Chain.hash_to_lower_case_string(tx.input) do
+        # Collect Rewards Method
+        "0x6d6b2f77" <> _parameters ->
+          Map.put(tx, :claimed_reward, fetch_staking_rewards_from_transaction_logs(tx))
+
+        # Delegate Method
+        "0x510b11bb" <> parameters ->
+          Map.put(tx, :delegated_amount, fetch_string_amount_from_raw_input(parameters))
+
+        # Undelegate Method
+        "0xbda8c0e9" <> parameters ->
+          Map.put(tx, :undelegated_amount, fetch_string_amount_from_raw_input(parameters))
+
+        _ ->
+          tx
+      end
+    end)
+  end
+
+  defp fetch_staking_rewards_from_transaction_logs(%{logs: logs} = _transaction) do
+    {:ok, claim_rewards_log_topic} =
+      Chain.string_to_transaction_hash("0xef0a8d7b9b8cbde3c16f5ea86afc300881518ffc9f6e8c8f6984e0037eec16fb")
+
+    logs
+    |> Enum.map(fn log ->
+      case log.first_topic == claim_rewards_log_topic do
+        true ->
+          log.data
+          |> Chain.hash_to_lower_case_string()
+          |> (fn "0x" <> reward_hex -> String.to_integer(reward_hex, 16) end).()
+          |> Integer.to_string()
+
+        false ->
+          nil
+      end
+    end)
+    |> Enum.uniq()
+    |> Enum.at(0)
+  end
+
+  defp fetch_staking_rewards_from_transaction_logs(transaction), do: transaction
+
+  # This method assumes that input size is always a string of 96 bytes.
+  # Input represents three parameters of 32 bytes each, from which only
+  # the last parameter (delegated/undelegated amount) is relevant for
+  # this function.
+  defp fetch_string_amount_from_raw_input(input) when is_binary(input) do
+    case String.length(input) do
+      192 -> input |> String.slice(128..-1//1) |> String.to_integer(16) |> Integer.to_string()
+      _ -> nil
+    end
   end
 end

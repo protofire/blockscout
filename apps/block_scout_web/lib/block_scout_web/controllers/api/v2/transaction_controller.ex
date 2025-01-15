@@ -1,4 +1,5 @@
 defmodule BlockScoutWeb.API.V2.TransactionController do
+  alias BlockScoutWeb.Resolvers.Transaction
   use BlockScoutWeb, :controller
 
   import BlockScoutWeb.Account.AuthController, only: [current_user: 1]
@@ -40,7 +41,8 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
     [created_contract_address: :token] => :optional,
     [from_address: :names] => :optional,
     [to_address: :names] => :optional,
-    [to_address: :smart_contract] => :optional
+    [to_address: :smart_contract] => :optional,
+    :logs => :optional
   }
 
   @token_transfers_necessity_by_association %{
@@ -97,34 +99,18 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
           necessity_by_association_with_actions
       end
 
-    with {:ok, transaction, transaction_hash} <-
+    with {:ok, transaction, _transaction_hash} <-
            validate_transaction(transaction_hash_string, params,
              necessity_by_association: necessity_by_association,
              api?: true
            ),
          preloaded <-
            Chain.preload_token_transfers(transaction, @token_transfers_in_tx_necessity_by_association, @api_true, false) do
-      case {Chain.hash_to_lower_case_string(transaction.input), Chain.transaction_to_reward_log(transaction_hash)} do
-        # CollectReward Input
-        {"0x6d6b2f77" <> _, %{data: hex_reward_value}} ->
-          reward =
-            hex_reward_value
-            |> Chain.hash_to_lower_case_string()
-            |> (fn "0x" <> reward_hex -> String.to_integer(reward_hex, 16) end).()
-            |> Integer.to_string()
-
-          conn
-          |> put_status(200)
-          |> render(:transaction_staking_reward, %{
-            transaction: transaction |> maybe_preload_ens_to_transaction(),
-            reward: reward
-          })
-
-        _ ->
-          conn
-          |> put_status(200)
-          |> render(:transaction, %{transaction: preloaded |> maybe_preload_ens_to_transaction()})
-      end
+      conn
+      |> put_status(200)
+      |> render(:transaction, %{
+        transaction: preloaded |> maybe_preload_ens_to_transaction() |> Transaction.fetch_staking_information()
+      })
     end
   end
 
@@ -144,7 +130,8 @@ defmodule BlockScoutWeb.API.V2.TransactionController do
       |> Keyword.merge(type_filter_options(params))
       |> Keyword.merge(@api_true)
 
-    transactions_plus_one = Chain.recent_transactions(full_options, filter_options)
+    transactions_plus_one =
+      Chain.recent_transactions(full_options, filter_options) |> Transaction.fetch_staking_information()
 
     {transactions, next_page} = split_list_by_page(transactions_plus_one)
 

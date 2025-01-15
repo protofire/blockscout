@@ -575,6 +575,7 @@ defmodule Explorer.Chain do
           else:
             Enum.map(&1, fn tx -> preload_token_transfers(tx, @token_transfers_necessity_by_association, options) end)
         )).()
+    |> Transaction.fetch_staking_information()
   end
 
   @spec block_to_staking_transactions(Hash.Full.t(), [paging_options | necessity_by_association_option]) ::

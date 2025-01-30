@@ -2,6 +2,7 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionView do
   use BlockScoutWeb, :view
 
   alias BlockScoutWeb.API.V2.{Helper}
+  alias Explorer.Market
   alias Explorer.Chain.{StakingLog, StakingTransaction}
 
   @api_true [api?: true]
@@ -73,7 +74,8 @@ defmodule BlockScoutWeb.API.V2.StakingTransactionView do
       msg_slot_pub_keys: transaction.msg_slot_pub_keys,
       msg_delegator_address: transaction.msg_delegator_address,
       msg_slot_pub_key_to_add: transaction.msg_slot_pub_key_to_add,
-      msg_slot_pub_key_to_remove: transaction.msg_slot_pub_key_to_remove
+      msg_slot_pub_key_to_remove: transaction.msg_slot_pub_key_to_remove,
+      exchange_rate: Market.get_coin_exchange_rate().usd_value
     }
   end
 

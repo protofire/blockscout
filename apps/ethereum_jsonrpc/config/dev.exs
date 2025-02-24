@@ -1,6 +1,6 @@
 import Config
 
-config :ethereum_jsonrpc, EthereumJSONRPC.Tracer, env: "dev", disabled?: true
+config :ethereum_jsonrpc, EthereumJSONRPC.Tracer, env: "dev", disabled?: false
 
 config :logger, :ethereum_jsonrpc,
   level: :debug,

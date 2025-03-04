@@ -34,6 +34,7 @@ defmodule Explorer.Chain.CSVExport.AddressTransactionCsvExporter do
       |> Keyword.put(:paging_options, paging_options)
       |> Keyword.put(:from_block, from_block)
       |> Keyword.put(:to_block, to_block)
+      |> Keyword.put(:necessity_by_association, %{logs: :optional})
       |> (&if(Helper.valid_filter?(filter_type, filter_value, "transactions"),
             do: &1 |> Keyword.put(:direction, String.to_atom(filter_value)),
             else: &1

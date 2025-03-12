@@ -87,7 +87,7 @@ defmodule Explorer.Chain.CsvExport.Address.Transactions do
       |> Stream.map(fn {decoded_data, transaction} ->
         {opening_price, closing_price} = date_to_prices[DateTime.to_date(Transaction.block_timestamp(transaction))]
         price = exchange_rate.usd_value || closing_price || opening_price || Decimal.new("0")
-        total_value_usd = Wei.mult(transaction.value, price)
+        total_value_usd = transaction.value |> Wei.to(:ether) |> Decimal.mult(price)
         [
           to_string(transaction.hash),
           transaction.block_number,
@@ -99,7 +99,7 @@ defmodule Explorer.Chain.CsvExport.Address.Transactions do
           Address.checksum(transaction.created_contract_address_hash),
           type(transaction, address_hash),
           Wei.to(transaction.value, :wei),
-          Wei.to(total_value_usd, :ether),
+          total_value_usd,
           fee(transaction),
           transaction.status,
           transaction.error,

@@ -99,7 +99,7 @@ defmodule Explorer.Chain.CsvExport.Address.Transactions do
           Address.checksum(transaction.created_contract_address_hash),
           type(transaction, address_hash),
           Wei.to(transaction.value, :wei),
-          Wei.to(total_value_usd, :wei),
+          Wei.to(total_value_usd, :ether),
           fee(transaction),
           transaction.status,
           transaction.error,

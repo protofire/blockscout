@@ -151,6 +151,8 @@ defmodule Explorer.Market.History.Cataloger do
   end
 
   defp market_cap_history(records, state) do
+    require Logger
+    Logger.info("inserting market records into db")
     Market.bulk_insert_history(records)
 
     # Schedule next check for history

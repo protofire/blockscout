@@ -55,22 +55,6 @@ defmodule Explorer.Market do
   """
   @spec get_coin_exchange_rate() :: Token.t()
   def get_coin_exchange_rate do
-    coin_exchange_from_cache = get_native_coin_exchange_rate_from_cache()
-    coin_exchange_from_db = get_native_coin_exchange_rate_from_db()
-    token_null = Token.null()
-
-    require Logger
-    Logger.info("====================================")
-    Logger.info("====================================")
-    Logger.info("====================================")
-    Logger.info("exchange from cache: #{inspect(coin_exchange_from_cache)}")
-    Logger.info("exchange from DB: #{inspect(coin_exchange_from_db)}")
-    Logger.info("token null: #{inspect(token_null)}")
-    Logger.info("result: #{inspect(coin_exchange_from_cache || coin_exchange_from_db || token_null)}")
-    Logger.info("====================================")
-    Logger.info("====================================")
-    Logger.info("====================================")
-
     get_native_coin_exchange_rate_from_cache() || get_native_coin_exchange_rate_from_db() || Token.null()
   end
 

@@ -151,8 +151,6 @@ defmodule Explorer.Market.History.Cataloger do
   end
 
   defp market_cap_history(records, state) do
-    require Logger
-    Logger.info("inserting market records into db")
     Market.bulk_insert_history(records)
 
     # Schedule next check for history
@@ -189,13 +187,6 @@ defmodule Explorer.Market.History.Cataloger do
   defp fetch_price_history(day_count, failed_attempts \\ 0) do
     Task.Supervisor.async_nolink(Explorer.MarketTaskSupervisor, fn ->
       Process.sleep(HistoryProcess.delay(failed_attempts))
-
-      require Logger
-      Logger.info("====================================")
-      Logger.info("====================================")
-      Logger.info("price history source: #{inspect(source_price())} - #{inspect(day_count)}")
-      Logger.info("====================================")
-      Logger.info("====================================")
 
       if failed_attempts < @price_failed_attempts do
         {:price_history, {day_count, failed_attempts, source_price().fetch_price_history(day_count)}}

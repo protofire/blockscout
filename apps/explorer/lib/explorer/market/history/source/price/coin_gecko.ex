@@ -13,13 +13,8 @@ defmodule Explorer.Market.History.Source.Price.CoinGecko do
   @impl SourcePrice
   def fetch_price_history(previous_days) do
     url = ExchangeRatesSourceCoinGecko.history_url(previous_days)
-    r = Source.http_request(url, ExchangeRatesSourceCoinGecko.headers())
 
-    require Logger
-    Logger.info("fetching price history: #{inspect(url)} with headers: #{inspect(ExchangeRatesSourceCoinGecko.headers())}")
-    Logger.info("result: #{inspect(r)}")
-
-    case r do
+    case Source.http_request(url, ExchangeRatesSourceCoinGecko.headers()) do
       {:ok, data} ->
         result =
           data

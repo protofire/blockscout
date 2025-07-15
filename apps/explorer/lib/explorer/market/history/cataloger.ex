@@ -190,6 +190,13 @@ defmodule Explorer.Market.History.Cataloger do
     Task.Supervisor.async_nolink(Explorer.MarketTaskSupervisor, fn ->
       Process.sleep(HistoryProcess.delay(failed_attempts))
 
+      require Logger
+      Logger.info("====================================")
+      Logger.info("====================================")
+      Logger.info("price history source: #{inspect(source_price())} - #{inspect(day_count)}")
+      Logger.info("====================================")
+      Logger.info("====================================")
+
       if failed_attempts < @price_failed_attempts do
         {:price_history, {day_count, failed_attempts, source_price().fetch_price_history(day_count)}}
       else

@@ -25,7 +25,6 @@ defmodule BlockScoutWeb.BlockChannel do
         %{block: block, average_block_time: average_block_time},
         %Phoenix.Socket{handler: BlockScoutWeb.UserSocketV2} = socket
       ) do
-    Logger.info("Handling out new_block for UserSocketV2")
     rendered_block = BlockViewAPI.render("block.json", %{block: block, socket: nil})
 
     push(socket, "new_block", %{

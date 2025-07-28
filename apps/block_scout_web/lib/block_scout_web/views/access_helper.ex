@@ -81,6 +81,11 @@ defmodule BlockScoutWeb.AccessHelper do
 
     user_agent = get_user_agent(conn)
 
+    Logger.info("--> ip: #{inspect(ip_string)} <--")
+    Logger.info("--> token: #{inspect(token)} <--")
+    Logger.info("--> user_agent: #{inspect(user_agent)} <--")
+    Logger.info("--> plan: #{inspect(plan)} <--")
+
     cond do
       check_api_key(conn) && get_api_key(conn) == static_api_key ->
         Logger.info("check api key")

@@ -81,43 +81,28 @@ defmodule BlockScoutWeb.AccessHelper do
 
     user_agent = get_user_agent(conn)
 
-    Logger.info("--> ip: #{inspect(ip_string)} <--")
-    Logger.info("--> token: #{inspect(token)} <--")
-    Logger.info("--> user_agent: #{inspect(user_agent)} <--")
-    Logger.info("--> plan: #{inspect(plan)} <--")
+    Logger.info("request ip: #{inspect(ip_string)}")
 
     cond do
       check_api_key(conn) && get_api_key(conn) == static_api_key ->
-        Logger.info("check api key")
         rate_limit(static_api_key, limit_by_key, time_interval_limit)
 
       check_api_key(conn) && !is_nil(plan) ->
-        Logger.info("check api key with a plan")
-
         conn
         |> get_api_key()
         |> rate_limit(plan.max_req_per_second, time_interval_limit)
 
       Enum.member?(whitelisted_ips(rate_limit_config), ip_string) ->
-        Logger.info("check whitelisted ip")
-        Logger.info("--> ip_string: #{inspect(ip_string)} <--")
-        r = rate_limit(ip_string, limit_by_whitelisted_ip, time_interval_limit)
-        Logger.info("whitelist IP result: #{inspect(r)} <--")
-        r
+        rate_limit(ip_string, limit_by_whitelisted_ip, time_interval_limit)
 
       api_v2_request?(conn) && !is_nil(token) && !is_nil(user_agent) ->
-        Logger.info("check apiv2 with token & user_agent")
         rate_limit(token, api_v2_ui_limit, time_interval_limit)
 
       api_v2_request?(conn) && !is_nil(user_agent) ->
-        Logger.info("check apiv2 with token")
         rate_limit(ip_string, limit_by_ip, time_interval_by_ip)
 
       true ->
-        Logger.info("check default rate")
-        r = rate_limit("api", global_limit, time_interval_limit)
-        Logger.info("default result: #{inspect(r)} <--")
-        r
+        rate_limit("api", global_limit, time_interval_limit)
     end
   end
 

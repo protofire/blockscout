@@ -63,6 +63,32 @@ defmodule BlockScoutWeb.AccessHelper do
     end
   end
 
+  def blocked_access?(conn) do
+    case Application.get_env(:block_scout_web, :blocked_ips) do
+      nil ->
+        false
+
+      blocked_ips ->
+        blocked_ips
+        |> String.replace(" ", "")
+        |> String.split(",")
+        |> Enum.member?(conn_to_ip_string(conn))
+    end
+  end
+
+  def handle_blocked_access(conn, api_v2? \\ false) do
+    APILogger.message("unauthorized request")
+
+    view = if api_v2?, do: ApiView, else: RPCView
+    tag = if api_v2?, do: :message, else: :error
+
+    conn
+    |> Conn.put_status(401)
+    |> put_view(view)
+    |> render(tag, %{tag => "unauthorized"})
+    |> Conn.halt()
+  end
+
   # credo:disable-for-next-line /Complexity/
   defp check_rate_limit_inner(conn, rate_limit_config) do
     global_limit = rate_limit_config[:global_limit]
@@ -80,8 +106,6 @@ defmodule BlockScoutWeb.AccessHelper do
     token = get_ui_v2_token(conn, ip_string)
 
     user_agent = get_user_agent(conn)
-
-    Logger.info("request ip: #{inspect(ip_string)}")
 
     cond do
       check_api_key(conn) && get_api_key(conn) == static_api_key ->

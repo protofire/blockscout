@@ -14,7 +14,7 @@ defmodule BlockScoutWeb.ApiRouter do
   """
   use BlockScoutWeb, :router
   alias BlockScoutWeb.{AddressTransactionController, APIKeyV2Router, SmartContractsApiV2Router, UtilsApiV2Router}
-  alias BlockScoutWeb.Plug.{CheckAccountAPI, CheckApiV2, RateLimit}
+  alias BlockScoutWeb.Plug.{CheckAccountAPI, CheckApiV2, RateLimit, BlockedIpList}
 
   forward("/v2/smart-contracts", SmartContractsApiV2Router)
   forward("/v2/key", APIKeyV2Router)
@@ -37,6 +37,7 @@ defmodule BlockScoutWeb.ApiRouter do
     plug(CheckApiV2)
     plug(:fetch_session)
     plug(:protect_from_forgery)
+    plug(BlockedIpList)
     plug(RateLimit)
   end
 
@@ -44,6 +45,7 @@ defmodule BlockScoutWeb.ApiRouter do
     plug(BlockScoutWeb.Plug.Logger, application: :api_v2)
     plug(:accepts, ["json"])
     plug(CheckApiV2)
+    plug(BlockedIpList)
     plug(RateLimit)
   end
 

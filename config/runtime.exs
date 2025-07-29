@@ -136,6 +136,8 @@ config :block_scout_web, BlockScoutWeb.MicroserviceInterfaces.TransactionInterpr
   service_url: System.get_env("MICROSERVICE_TRANSACTION_INTERPRETATION_URL"),
   enabled: ConfigHelper.parse_bool_env_var("MICROSERVICE_TRANSACTION_INTERPRETATION_ENABLED")
 
+config :block_scout_web, blocked_ips: System.get_env("API_BLOCKED_IPS")
+
 # Configures Ueberauth's Auth0 auth provider
 config :ueberauth, Ueberauth.Strategy.Auth0.OAuth,
   domain: System.get_env("ACCOUNT_AUTH0_DOMAIN"),

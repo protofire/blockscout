@@ -158,9 +158,11 @@ defmodule EthereumJSONRPC.Geth do
       request(request_params)
     catch
       kind, reason ->
-        IO.inspect(request_params)
+        Logger.error(fn ->
+          ["debug_traceTransaction failed: ", inspect(kind), " ", inspect(reason),
+           "\nrequest_params: ", inspect(request_params)]
+        end)
 
-        # Optionally, re-raise the error if you want the caller to handle it
         {:error, reason}
     end
 

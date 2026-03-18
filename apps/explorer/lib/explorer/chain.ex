@@ -1952,7 +1952,7 @@ defmodule Explorer.Chain do
       from(
         po in PendingBlockOperation,
         # temp test
-        where: not is_nil(po.block_number) and po.block_number < 13800000 or po.block_number > 28000000, # temp solution avoid spamming blocks
+        where: not is_nil(po.block_number) and (po.block_number < 13800000 or po.block_number > 28000000) and po.block_number not in [86355794, 86353442, 86353440, 86353438, 86353436, 76515782, 76439946], # temp solution avoid spamming blocks
         select: po.block_number,
         order_by: [desc: po.block_number]
       )

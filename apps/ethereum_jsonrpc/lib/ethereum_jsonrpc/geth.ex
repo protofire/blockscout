@@ -335,6 +335,9 @@ defmodule EthereumJSONRPC.Geth do
         %{code: -32_000, message: "execution timeout"} ->
           %{message: :timeout}
 
+        %{code: -32_000, message: "incorrect number of top-level calls"} ->
+          %{message: :trace_unavailable}
+
         _ ->
           error
       end

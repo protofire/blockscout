@@ -126,11 +126,13 @@ defmodule Indexer.Fetcher.InternalTransaction do
           error_count: filtered_unique_numbers_count
         )
 
-        IO.inspect(filtered_unique_numbers)
         handle_not_found_transaction(reason)
 
-        # re-queue the de-duped entries
-        {:retry, filtered_unique_numbers}
+        if all_non_retryable?(reason) do
+          safe_import_internal_transaction([], filtered_unique_numbers)
+        else
+          {:retry, filtered_unique_numbers}
+        end
 
       {:error, reason, stacktrace} ->
         Logger.error(
@@ -373,6 +375,9 @@ defmodule Indexer.Fetcher.InternalTransaction do
       %{data: data, message: "historical backend error" <> _} -> invalidate_block_from_error(data)
       %{data: data, message: "genesis is not traceable"} -> invalidate_block_from_error(data)
       %{data: data, message: "transaction not found"} -> invalidate_block_from_error(data)
+      %{data: data, message: :trace_unavailable} ->
+        Logger.warning("Trace unavailable for transaction in block, skipping: #{inspect(data)}")
+        :ok
       _ -> :ok
     end
   end
@@ -384,6 +389,17 @@ defmodule Indexer.Fetcher.InternalTransaction do
     do: BlocksRunner.invalidate_consensus_blocks([block_number])
 
   defp invalidate_block_from_error(_error_data), do: :ok
+
+  defp all_non_retryable?(errors) when is_list(errors) do
+    Enum.all?(errors, &non_retryable_error?/1)
+  end
+
+  defp all_non_retryable?(_), do: false
+
+  defp non_retryable_error?(%{message: :trace_unavailable}), do: true
+  defp non_retryable_error?(%{message: :not_found}), do: true
+  defp non_retryable_error?(%{message: :timeout}), do: true
+  defp non_retryable_error?(_), do: false
 
   def defaults do
     [

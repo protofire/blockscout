@@ -160,6 +160,18 @@ defmodule Indexer.BufferedTask do
     GenServer.call(server, {:buffer, entries}, timeout)
   end
 
+  @doc """
+  Buffers list of entries for immediate high-priority execution.
+
+  Unlike `buffer/3`, entries are pushed directly to the FRONT of the
+  work queue (bypassing the current_buffer flush cycle), so they will
+  be processed before any previously enqueued entries.
+  """
+  @spec buffer_front(GenServer.name(), entries(), timeout()) :: :ok
+  def buffer_front(server, entries, timeout \\ 5000) when is_list(entries) do
+    GenServer.call(server, {:push_front, entries}, timeout)
+  end
+
   def child_spec([init_arguments]) do
     child_spec([init_arguments, []])
   end
@@ -306,6 +318,15 @@ defmodule Indexer.BufferedTask do
     {:reply, :ok, new_state}
   end
 
+  def handle_call({:push_front, entries}, _from, state) when is_list(entries) do
+    new_state =
+      state
+      |> push_front(entries)
+      |> spawn_next_batch()
+
+    {:reply, :ok, new_state}
+  end
+
   def handle_call(:shrink, _from, %__MODULE__{bound_queue: bound_queue} = state) do
     {reply, shrunk_state} =
       case BoundQueue.shrink(bound_queue) do
@@ -414,6 +435,12 @@ defmodule Indexer.BufferedTask do
 
           new_bound_queue
       end
+
+    %BufferedTask{state | bound_queue: new_bound_queue}
+  end
+
+  defp push_front(%BufferedTask{bound_queue: bound_queue} = state, entries) when is_list(entries) do
+    {new_bound_queue, _remaining} = BoundQueue.push_front_until_maximum_size(bound_queue, entries)
 
     %BufferedTask{state | bound_queue: new_bound_queue}
   end

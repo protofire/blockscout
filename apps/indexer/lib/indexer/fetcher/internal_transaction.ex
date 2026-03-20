@@ -47,7 +47,7 @@ defmodule Indexer.Fetcher.InternalTransaction do
     if InternalTransactionSupervisor.disabled?() do
       :ok
     else
-      BufferedTask.buffer(__MODULE__, block_numbers, timeout)
+      BufferedTask.buffer_front(__MODULE__, block_numbers, timeout)
     end
   end
 

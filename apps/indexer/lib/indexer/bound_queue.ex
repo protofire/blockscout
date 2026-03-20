@@ -104,6 +104,32 @@ defmodule Indexer.BoundQueue do
   end
 
   @doc """
+  `push_front/2` items from `items` into `bound_queue` until it is full.
+
+  Items are pushed in reverse order so that the first item in the list ends up
+  at the front of the queue (i.e., the list order is preserved from the consumer's
+  perspective).
+  """
+  def push_front_until_maximum_size(
+        %__MODULE__{size: maximum_size, maximum_size: maximum_size} = bound_queue,
+        remaining
+      ),
+      do: {bound_queue, remaining}
+
+  def push_front_until_maximum_size(%__MODULE__{} = bound_queue, [] = remaining), do: {bound_queue, remaining}
+
+  def push_front_until_maximum_size(%__MODULE__{} = bound_queue, items) when is_list(items) do
+    items
+    |> Enum.reverse()
+    |> Enum.reduce({bound_queue, []}, fn item, {queue, dropped} ->
+      case push_front(queue, item) do
+        {:ok, new_queue} -> {new_queue, dropped}
+        {:error, :maximum_size} -> {queue, [item | dropped]}
+      end
+    end)
+  end
+
+  @doc """
   Shrinks the queue to half its current `size` and sets that as its new `max_size`.
   """
   def shrink(%__MODULE__{size: size}) when size <= 1, do: {:error, :minimum_size}
